@@ -405,7 +405,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     }
     if (!reduced) requestAnimationFrame(drawBg);
   }
-  requestAnimationFrame(drawBg);
+  drawBg(performance.now());   // 1枚目は即描く（描画が止まる環境でも真っ暗にしない）
   function setMood(mode){          // idle / hot / run
     document.body.classList.toggle("hot", mode !== "idle");
     speedTo = mode === "run" ? 3.4 : (mode === "hot" ? 1.9 : 1);
