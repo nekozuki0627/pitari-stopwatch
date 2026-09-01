@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ピタリ・ストップウォッチ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+:root{
+  --ink:#0A0E13;
+  --panel:#131A22;
+  --panel-2:#1B242E;
+  --line:#2B3846;
+  --text:#E6EDF4;
+  --muted:#8494A3;
+  --amber:#FFB627;
+  --amber-dim:#8A6317;
+  --go:#3DDC84;
+  --stop:#FF4D4D;
+  --font-num:"Chivo Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --font-ja:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--font-ja);
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255,182,39,.09), transparent 70%),
+    repeating-linear-gradient(180deg, rgba(255,255,255,.016) 0 1px, transparent 1px 3px);
+}
+.stage{
+  position:relative;z-index:1;
+  height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(8px,1.8dvh,30px);
+  padding:max(10px,env(safe-area-inset-top)) 16px calc(58px + env(safe-area-inset-bottom));
+  text-align:center;overflow:hidden;
+}
+.hidden{display:none !important}
+
+/* ---- 目標値チップ ---- */
+.target-chip{
+  display:inline-flex;align-items:baseline;gap:.5em;
+  border:1px solid var(--line);
+  border-radius:2px;
+  padding:.5em 1.1em;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+.eyebrow{
+  font-family:var(--font-num);font-size:.72rem;font-weight:400;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+}
+.target-val{
+  font-family:var(--font-num);font-weight:700;
+  font-variant-numeric:tabular-nums;
+  font-size:clamp(1.6rem,5vw,2.6rem);
+  color:var(--amber);line-height:1;
+}
+.target-unit{font-size:.9rem;color:var(--muted);font-weight:500}
+.tagline{
+  margin-top:.7em;color:var(--muted);
+  font-size:clamp(.85rem,2.6vw,1.15rem);
+  letter-spacing:.06em;font-weight:500;
+}
+
+/* ---- 計測ダイヤル ---- */
+.dial{
+  position:relative;
+  width:min(76vw,38dvh,460px);
+  aspect-ratio:1;flex:none;
+  display:grid;place-items:center;
+}
+.dial-ring{
+  position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from -90deg, var(--amber) 0deg, rgba(255,182,39,0) 0deg);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+  opacity:0;transition:opacity .2s;
+}
+.dial-track{
+  position:absolute;inset:0;border-radius:50%;
+  border:1px solid var(--line);
+}
+.dial-ticks{position:absolute;inset:0;border-radius:50%;opacity:.55}
+.readout{
+  font-family:var(--font-num);font-weight:700;
+  font-variant-numeric:tabular-nums;
+  font-size:min(19vw,11.5dvh,7rem);
+  line-height:1;letter-spacing:-.02em;
+  color:var(--text);
+  text-shadow:0 0 40px rgba(255,182,39,.28);
+}
+body.running .dial-ring{opacity:1}
+body.blind .dial-ring{opacity:0}
+body.blind .readout{color:var(--amber-dim);letter-spacing:.06em}
+
+/* ---- ボタン ---- */
+.btn{
+  font-family:var(--font-ja);font-weight:700;
+  border:none;border-radius:2px;cursor:pointer;color:var(--ink);
+  transition:transform .08s,filter .15s;
+}
+.btn:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+.btn:active{transform:translateY(2px)}
+.btn-go{
+  background:var(--go);
+  font-size:clamp(1.3rem,4.4vw,2rem);
+  letter-spacing:.18em;
+  padding:.75em 2.6em;
+  box-shadow:0 6px 0 #219356;
+}
+.btn-stop{
+  width:min(66vw,40dvh,300px);aspect-ratio:1;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 50% 38%, #FF7A7A, var(--stop) 62%, #B01212);
+  color:#fff;font-size:min(9vw,6dvh,3.2rem);letter-spacing:.1em;
+  border:8px solid rgba(255,255,255,.92);
+  box-shadow:0 0 0 6px rgba(255,77,77,.18), 0 0 70px rgba(255,77,77,.4);
+  animation:breathe 1.05s ease-in-out infinite;
+}
+@keyframes breathe{50%{box-shadow:0 0 0 16px rgba(255,77,77,.1), 0 0 100px rgba(255,77,77,.55)}}
+.btn-reset{
+  background:var(--amber);
+  font-size:clamp(1.1rem,3.6vw,1.6rem);
+  letter-spacing:.14em;padding:.7em 2.4em;
+  box-shadow:0 6px 0 #A8730F;
+}
+.btn-ghost{
+  background:transparent;color:var(--muted);
+  border:1px solid var(--line);border-radius:2px;
+  font-family:var(--font-num);font-size:.75rem;letter-spacing:.16em;
+  text-transform:uppercase;padding:.6em 1em;cursor:pointer;
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-ghost[aria-pressed="true"]{color:var(--ink);background:var(--amber);border-color:var(--amber)}
+.btn-ghost:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+/* ---- 結果 ---- */
+.judge{
+  font-weight:900;line-height:1;
+  font-size:min(9vw,9dvh,4.6rem);
+  letter-spacing:.02em;text-wrap:balance;
+}
+.judge.rainbow{animation:rb .9s linear infinite}
+@keyframes rb{0%{color:#FF4D4D}20%{color:#FFB627}40%{color:#FFF06A}60%{color:#3DDC84}80%{color:#4DC9FF}100%{color:#C77DFF}}
+.diff{
+  font-family:var(--font-num);font-variant-numeric:tabular-nums;
+  font-size:clamp(1.2rem,4.5vw,2.2rem);color:var(--muted);letter-spacing:.04em;
+}
+.result-time{
+  font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
+  font-size:min(26vw,22dvh,11rem);line-height:1;color:var(--amber);
+  text-shadow:0 0 60px rgba(255,182,39,.3);
+}
+.result-time .unit{font-size:.3em;color:var(--muted);margin-left:.15em}
+
+/* ---- 記録フォーム・ランキング ---- */
+.row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+input[type=text],input[type=number]{
+  font-family:var(--font-num);font-size:1rem;
+  background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:2px;
+  padding:.6em .8em;width:150px;text-align:center;
+}
+input:focus{outline:2px solid var(--amber);outline-offset:1px}
+.saved-note{color:var(--go);font-size:.9rem;letter-spacing:.08em}
+
+.board{
+  position:fixed;inset:0;z-index:20;
+  background:rgba(10,14,19,.96);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px 16px;gap:18px;
+}
+.board h2{
+  font-family:var(--font-num);font-weight:400;font-size:.8rem;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--muted);
+}
+.board-scroll{width:min(560px,100%);max-height:62dvh;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:.6em .5em;border-bottom:1px solid var(--line);text-align:left}
+th{font-family:var(--font-num);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:400}
+td.rank{font-family:var(--font-num);color:var(--amber);width:2.6em;font-weight:700}
+td.num{font-family:var(--font-num);text-align:right;white-space:nowrap}
+tr.top td.rank{font-size:1.15rem}
+.empty{color:var(--muted);padding:2em 0;text-align:center}
+
+/* ---- 隅のコントロール ---- */
+.corner{
+  position:fixed;z-index:15;
+  bottom:max(12px,env(safe-area-inset-bottom));
+  left:12px;right:12px;
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;
+  transition:opacity .2s;
+}
+body.running .corner{opacity:0;pointer-events:none}
+
+/* 低い画面（横向きスマホ・PCの小窓）では要素を間引く */
+@media (max-height:560px){
+  .tagline{display:none}
+  .target-chip{padding:.35em .8em}
+  .corner{gap:6px}
+  .btn-ghost{font-size:.66rem;padding:.45em .7em}
+  input[type=text],input[type=number]{padding:.4em .6em;font-size:.85rem}
+  .stage{padding-bottom:calc(46px + env(safe-area-inset-bottom))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<main class="stage" id="game">
+  <div>
+    <div class="target-chip">
+      <span class="eyebrow">Target</span>
+      <span class="target-val" id="targetLabel">10.00</span>
+      <span class="target-unit">秒</span>
+    </div>
+    <p class="tagline">ぴったりで止めろ。</p>
+  </div>
+
+  <div class="dial">
+    <div class="dial-track"></div>
+    <svg class="dial-ticks" viewBox="0 0 200 200" aria-hidden="true"><g id="ticks" stroke="#2B3846" stroke-width="1.5"></g></svg>
+    <div class="dial-ring" id="ring"></div>
+    <div class="readout" id="timer">0.00</div>
+  </div>
+
+  <button class="btn btn-go" id="startBtn">START</button>
+  <button class="btn btn-stop hidden" id="stopBtn">STOP</button>
+</main>
+
+<section class="stage hidden" id="result">
+  <div class="judge" id="judge"></div>
+  <div class="diff" id="diff"></div>
+  <div class="result-time"><span id="resultTime">0.00</span><span class="unit">秒</span></div>
+  <div class="row" id="saveRow">
+    <input type="text" id="nameInput" maxlength="12" placeholder="なまえ（任意）" autocomplete="off">
+    <button class="btn-ghost" id="saveBtn">記録する</button>
+  </div>
+  <div class="saved-note hidden" id="savedNote">記録しました</div>
+  <button class="btn btn-reset" id="resetBtn">もう一回</button>
+</section>
+
+<div class="board hidden" id="board">
+  <h2>Ranking — 目標に近い順</h2>
+  <div class="board-scroll">
+    <table>
+      <thead><tr><th></th><th>なまえ</th><th style="text-align:right">タイム</th><th style="text-align:right">誤差</th></tr></thead>
+      <tbody id="boardBody"></tbody>
+    </table>
+    <p class="empty hidden" id="boardEmpty">まだ記録がありません。</p>
+  </div>
+  <div class="row">
+    <button class="btn-ghost" id="clearBtn">記録を全部消す</button>
+    <button class="btn-ghost" id="closeBoardBtn">閉じる</button>
+  </div>
+</div>
+
+<div class="corner" id="corner">
+  <input type="number" id="targetInput" step="0.01" min="0.1" value="10" style="width:110px">
+  <button class="btn-ghost" id="applyBtn">目標を変更</button>
+  <button class="btn-ghost" id="blindBtn" aria-pressed="false">数字を隠す</button>
+  <button class="btn-ghost" id="boardBtn">ランキング</button>
+  <button class="btn-ghost" id="fsBtn">全画面</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(id){ return document.getElementById(id); };
+  var target = 10.00, running = false, startAt = 0, raf = 0, last = null;
+
+  // ダイヤルの目盛り（1周＝1秒のスイープ用）
+  (function(){
+    var s = "";
+    for (var i = 0; i < 60; i++){
+      var a = (i * 6 - 90) * Math.PI / 180;
+      var long = i % 5 === 0;
+      var r1 = long ? 84 : 90, r2 = 97;
+      s += '<line x1="' + (100 + Math.cos(a) * r1).toFixed(1) + '" y1="' + (100 + Math.sin(a) * r1).toFixed(1)
+         + '" x2="' + (100 + Math.cos(a) * r2).toFixed(1) + '" y2="' + (100 + Math.sin(a) * r2).toFixed(1)
+         + '" stroke-opacity="' + (long ? 1 : 0.45) + '"/>';
+    }
+    $("ticks").innerHTML = s;
+  })();
+
+  /* ---------- 計測 ---------- */
+  function tick(){
+    var sec = (performance.now() - startAt) / 1000;
+    $("timer").textContent = document.body.classList.contains("blind") ? "-.--" : sec.toFixed(2);
+    $("ring").style.background =
+      "conic-gradient(from -90deg, var(--amber) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,182,39,0) 0deg)";
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start(){
+    if (running) return;
+    running = true;
+    document.body.classList.add("running");
+    $("startBtn").classList.add("hidden");
+    $("stopBtn").classList.remove("hidden");
+    startAt = performance.now();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function stop(){
+    if (!running) return;
+    running = false;
+    cancelAnimationFrame(raf);
+    var sec = Number(((performance.now() - startAt) / 1000).toFixed(2));
+    document.body.classList.remove("running");
+    showResult(sec, Number((sec - target).toFixed(2)));
+  }
+
+  var GRADES = [
+    [0,    "\u{1F308} PERFECT!!", true],
+    [0.01, "⭐ MIRACLE!",     false],
+    [0.05, "\u{1F947} SUPER!",    false],
+    [0.10, "\u{1F389} EXCELLENT!",false],
+    [0.30, "\u{1F44D} GOOD!",     false]
+  ];
+
+  function showResult(sec, delta){
+    var ad = Math.abs(delta), label = "TRY AGAIN", rainbow = false;
+    for (var i = 0; i < GRADES.length; i++){
+      if (ad <= GRADES[i][0]){ label = GRADES[i][1]; rainbow = GRADES[i][2]; break; }
+    }
+    $("judge").textContent = label;
+    $("judge").className = "judge" + (rainbow ? " rainbow" : "");
+    $("diff").textContent = (delta >= 0 ? "+" : "") + delta.toFixed(2) + " 秒";
+    $("resultTime").textContent = sec.toFixed(2);
+    last = { sec: sec, delta: delta, target: target };
+    $("saveRow").classList.remove("hidden");
+    $("savedNote").classList.add("hidden");
+    $("game").classList.add("hidden");
+    $("result").classList.remove("hidden");
+  }
+
+  function reset(){
+    $("result").classList.add("hidden");
+    $("game").classList.remove("hidden");
+    $("stopBtn").classList.add("hidden");
+    $("startBtn").classList.remove("hidden");
+    $("timer").textContent = "0.00";
+    $("ring").style.background = "conic-gradient(from -90deg, var(--amber) 0deg, rgba(255,182,39,0) 0deg)";
+  }
+
+  /* ---------- 記録 ---------- */
+  var KEY = "pitari.records.v1";
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; }
+  }
+  function save(list){
+    try { localStorage.setItem(KEY, JSON.stringify(list.slice(0, 200))); } catch (e) {}
+  }
+  function renderBoard(){
+    var list = load().sort(function(a, b){ return Math.abs(a.delta) - Math.abs(b.delta); }).slice(0, 20);
+    var body = $("boardBody");
+    body.innerHTML = "";
+    $("boardEmpty").classList.toggle("hidden", list.length > 0);
+    list.forEach(function(r, i){
+      var tr = document.createElement("tr");
+      if (i < 3) tr.className = "top";
+      var medal = ["\u{1F947}", "\u{1F948}", "\u{1F949}"][i] || String(i + 1);
+      tr.innerHTML = '<td class="rank"></td><td class="name"></td>'
+                   + '<td class="num">' + r.sec.toFixed(2) + '</td>'
+                   + '<td class="num">' + (r.delta >= 0 ? "+" : "") + r.delta.toFixed(2) + '</td>';
+      tr.children[0].textContent = medal;
+      tr.children[1].textContent = r.name;
+      body.appendChild(tr);
+    });
+  }
+
+  /* ---------- 操作 ---------- */
+  $("startBtn").addEventListener("click", start);
+  $("stopBtn").addEventListener("pointerdown", stop);
+  $("resetBtn").addEventListener("click", reset);
+
+  $("applyBtn").addEventListener("click", function(){
+    var v = Number($("targetInput").value);
+    if (v > 0){ target = v; $("targetLabel").textContent = v.toFixed(2); }
+    else { $("targetInput").value = target; }
+  });
+
+  $("blindBtn").addEventListener("click", function(){
+    var on = document.body.classList.toggle("blind");
+    this.setAttribute("aria-pressed", on ? "true" : "false");
+    this.textContent = on ? "数字を出す" : "数字を隠す";
+  });
+
+  $("saveBtn").addEventListener("click", function(){
+    if (!last) return;
+    var list = load();
+    list.push({
+      name: ($("nameInput").value || "ゲスト").slice(0, 12),
+      sec: last.sec, delta: last.delta, target: last.target, ts: Date.now()
+    });
+    save(list);
+    $("nameInput").value = "";
+    $("saveRow").classList.add("hidden");
+    $("savedNote").classList.remove("hidden");
+  });
+
+  $("boardBtn").addEventListener("click", function(){ renderBoard(); $("board").classList.remove("hidden"); });
+  $("closeBoardBtn").addEventListener("click", function(){ $("board").classList.add("hidden"); });
+  $("clearBtn").addEventListener("click", function(){
+    if (confirm("記録をすべて削除します。よろしいですか？")){ save([]); renderBoard(); }
+  });
+
+  $("fsBtn").addEventListener("click", toggleFs);
+  function toggleFs(){
+    if (!document.fullscreenElement){
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener("keydown", function(e){
+    if (e.target && e.target.tagName === "INPUT") return;
+    if (e.key === "f" || e.key === "F") toggleFs();
+    if (e.code === "Space"){
+      e.preventDefault();
+      if (e.repeat) return;
+      if (running) stop();
+      else if (!$("result").classList.contains("hidden")) reset();
+      else start();
+    }
+  });
+})();
+</script>
+</body>
+</html>
