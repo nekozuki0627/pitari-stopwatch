@@ -286,7 +286,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 }
 </style>
 </head>
-<body class="blind">
+<body>
 <canvas id="bg"></canvas>
 <div id="vignette"></div>
 
@@ -361,6 +361,8 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 
   var target = 10.00, running = false, counting = false, startAt = 0, raf = 0;
   var useCountdown = true, soundOn = true;
+
+  document.body.classList.add("blind");   // 初期状態は目隠しON
 
   /* ---------- 背景の光 ----------
      ゆらぎは無理数に近い比の正弦波を重ねて作る。周期が揃わないので、
