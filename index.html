@@ -397,8 +397,8 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
       var y = BH * (0.5 + 0.42 * Math.sin(t * b.fy * 6.2832 + b.py));
       var r = BW * b.r;
       var g = bctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, "rgba(" + pal[i] + ",0.9)");
-      g.addColorStop(0.55, "rgba(" + pal[i] + ",0.28)");
+      g.addColorStop(0, "rgba(" + pal[i] + ",0.55)");
+      g.addColorStop(0.55, "rgba(" + pal[i] + ",0.16)");
       g.addColorStop(1, "rgba(" + pal[i] + ",0)");
       bctx.fillStyle = g;
       bctx.beginPath(); bctx.arc(x, y, r, 0, 6.2832); bctx.fill();
