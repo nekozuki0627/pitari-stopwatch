@@ -71,7 +71,7 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
   color:var(--navy);
   font-weight:900;
   font-size:min(4.4vw,3.4dvh,2.1rem);
-  letter-spacing:.14em;text-indent:.14em;
+  letter-spacing:.14em;text-indent:.14em;white-space:nowrap;
   padding:.34em 1.5em;
   border-radius:999px;
   border:.18em solid var(--cream);
@@ -84,12 +84,13 @@ body.running .ribbon{font-size:min(3.2vw,2.6dvh,1.5rem)}
   font-variant-numeric:tabular-nums;line-height:1;
   color:var(--tomato);
   font-size:min(26vw,32dvh);
+  white-space:nowrap;
 }
 .target-val .u{font-size:.3em;color:var(--orange);margin-left:.1em}
 body.running .target-val{font-size:min(12vw,12dvh)}
 .tagline{
   margin-top:.35em;font-weight:900;color:var(--navy);
-  font-size:min(5vw,4dvh,2.6rem);letter-spacing:.14em;text-indent:.14em;
+  font-size:min(5vw,4dvh,2.6rem);letter-spacing:.14em;text-indent:.14em;white-space:nowrap;
 }
 body.running .tagline{display:none}
 .keyhint{
@@ -123,14 +124,14 @@ body.running .dial{display:grid}
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;
   font-size:min(26vw,24dvh);
-  line-height:1;color:var(--tomato);
+  line-height:1;color:var(--tomato);white-space:nowrap;
 }
 
 /* ===== ボタン ===== */
 .btn{
   font-family:var(--font-ja);font-weight:900;
   border:.28rem solid var(--cream);
-  cursor:pointer;color:var(--cream);
+  cursor:pointer;color:var(--cream);white-space:nowrap;
   transition:transform .09s, box-shadow .09s;
 }
 .btn:focus-visible{outline:.28rem solid var(--navy);outline-offset:.3rem}
@@ -183,8 +184,8 @@ body.running #tapstop{display:block}
 /* ===== 結果 ===== */
 .judge{
   font-weight:900;line-height:1.06;
-  font-size:min(13vw,14dvh);
-  color:var(--tomato);text-wrap:balance;
+  font-size:min(11vw,14dvh);
+  color:var(--tomato);white-space:nowrap;
 }
 .judge.rainbow{animation:rb .68s linear infinite}
 @keyframes rb{
@@ -197,14 +198,14 @@ body.running #tapstop{display:block}
 @keyframes slam{0%{transform:scale(2.3) rotate(-9deg);opacity:0}55%{transform:scale(1) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 .diff{
   font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:600;
-  font-size:min(6vw,5.6dvh,3.4rem);color:var(--navy);
+  font-size:min(6vw,5.6dvh,3.4rem);color:var(--navy);white-space:nowrap;
   background:var(--cream);border:.2rem solid var(--navy);
   border-radius:999px;padding:.16em .9em;
   box-shadow:0 .24rem 0 rgba(35,50,77,.3);
 }
 .result-time{
   font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:min(34vw,33dvh);line-height:1;color:var(--cream);
+  font-size:min(34vw,33dvh);line-height:1;color:var(--cream);white-space:nowrap;
   -webkit-text-stroke:.045em var(--navy);paint-order:stroke fill;
   text-shadow:0 .05em 0 rgba(35,50,77,.35);
 }
@@ -276,7 +277,7 @@ body.running .corner{opacity:0;pointer-events:none}
   .readout{font-size:min(17vw,19dvh)}
   .btn-stop{width:min(24vw,20dvh,150px);font-size:min(3.2vw,3.2dvh,1.2rem);border-width:.3rem}
   .btn-go{font-size:min(5vw,5.6dvh,2rem);padding:.5em 1.6em}
-  .judge{font-size:min(11vw,12dvh)}
+  .judge{font-size:min(10vw,12dvh)}
   .diff{font-size:min(5vw,5.2dvh,2rem)}
   .result-time{font-size:min(30vw,29dvh)}
   .btn-reset{font-size:min(4vw,4.4dvh,1.4rem);padding:.5em 1.6em}
@@ -313,7 +314,7 @@ body.running .corner{opacity:0;pointer-events:none}
     <div class="judge telop" id="judge"></div>
     <div class="diff" id="diff"></div>
     <div class="result-time"><span id="resultTime">0.00</span><span class="unit">びょう</span></div>
-    <button class="btn btn-reset telop" id="resetBtn">もういっかい</button>
+    <button class="btn btn-reset telop" id="resetBtn">はじめから</button>
   </section>
 
   <div class="corner">
@@ -533,11 +534,11 @@ body.running .corner{opacity:0;pointer-events:none}
 
   var GRADES = [
     { max: 0,    label: "\u{1F308} かんぺき！！", cls: "rainbow", conf: 280, notes: [[523,.16],[659,.16],[784,.16],[1046,.5]] },
-    { max: 0.01, label: "\u{2B50} きせき！",      cls: "hit",     conf: 220, notes: [[659,.15],[880,.15],[1175,.44]] },
-    { max: 0.05, label: "\u{1F947} すごい！",     cls: "hit",     conf: 150, notes: [[523,.14],[784,.14],[1046,.38]] },
+    { max: 0.01, label: "\u{2728} きせき！",      cls: "hit",     conf: 220, notes: [[659,.15],[880,.15],[1175,.44]] },
+    { max: 0.05, label: "\u{1F38A} すごい！",     cls: "hit",     conf: 150, notes: [[523,.14],[784,.14],[1046,.38]] },
     { max: 0.10, label: "\u{1F389} やったね！",   cls: "hit",     conf: 100, notes: [[523,.14],[659,.14],[880,.32]] },
     { max: 0.30, label: "\u{1F44D} いいね！",     cls: "",        conf: 50,  notes: [[523,.14],[659,.28]] },
-    { max: 1e9,  label: "もういっかい！",          cls: "miss",    conf: 0,   notes: [[392,.16],[294,.3]] }
+    { max: 1e9,  label: "\u{1F4AA} ドンマイ！",    cls: "miss",    conf: 0,   notes: [[392,.16],[294,.3]] }
   ];
 
   function showResult(sec, delta){
