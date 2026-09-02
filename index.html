@@ -17,7 +17,6 @@
   --grass:#4FD97A;
   --grass-deep:#2AA855;
   --peach:#FF7BB0;
-  --grape:#A97BFF;
   --navy:#23324D;
   --navy-soft:#5B6C88;
   --cream:#FFFDF5;
@@ -79,6 +78,7 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
   box-shadow:0 .28em 0 rgba(35,50,77,.22);
   transform:rotate(-2.5deg);
 }
+body.running .ribbon{font-size:min(3.2vw,2.6dvh,1.5rem)}
 .target-val{
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;line-height:1;
@@ -86,15 +86,12 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
   font-size:min(26vw,32dvh);
 }
 .target-val .u{font-size:.3em;color:var(--orange);margin-left:.1em}
-body.running .target-val{font-size:min(15vw,15dvh)}
+body.running .target-val{font-size:min(12vw,12dvh)}
 .tagline{
   margin-top:.35em;font-weight:900;color:var(--navy);
   font-size:min(5vw,4dvh,2.6rem);letter-spacing:.14em;text-indent:.14em;
 }
-.tagline.hot{color:var(--tomato);animation:wiggle .5s ease-in-out infinite}
-@keyframes wiggle{0%,100%{transform:rotate(-2.5deg) scale(1)}50%{transform:rotate(2.5deg) scale(1.07)}}
-body:not(.running) #tagRun{display:none}
-body.running #tagReady{display:none}
+body.running .tagline{display:none}
 .keyhint{
   color:var(--navy-soft);font-weight:700;
   font-size:.78rem;letter-spacing:.1em;
@@ -102,14 +99,13 @@ body.running #tagReady{display:none}
 body.running .keyhint{display:none}
 @media (pointer:coarse){.keyhint{display:none}}
 
-/* ===== 計測メーター（数字を出すモードのみ） ===== */
+/* ===== 計測メーター（計測中だけ出す。観客に進行が見える） ===== */
 .dial{
-  position:relative;flex:none;
-  width:min(74vw,34dvh,460px);
-  aspect-ratio:1;display:grid;place-items:center;
+  position:relative;flex:none;display:none;
+  width:min(72vw,40dvh,520px);
+  aspect-ratio:1;place-items:center;
 }
-body.running .dial{width:min(80vw,38dvh,540px)}
-body.blind .dial{display:none}
+body.running .dial{display:grid}
 .dial-face{
   position:absolute;inset:0;border-radius:50%;
   background:var(--cream);
@@ -121,17 +117,14 @@ body.blind .dial{display:none}
   background:conic-gradient(from -90deg, var(--lemon) 0deg, rgba(255,210,48,0) 0deg);
   -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
   mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
-  opacity:0;transition:opacity .2s;
 }
-body.running .dial-ring{opacity:1}
 .readout{
   position:relative;
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;
-  font-size:min(20vw,13dvh);
-  line-height:1;color:var(--navy);
+  font-size:min(26vw,24dvh);
+  line-height:1;color:var(--tomato);
 }
-body.running .readout{font-size:min(26vw,22dvh);color:var(--tomato)}
 
 /* ===== ボタン ===== */
 .btn{
@@ -151,23 +144,17 @@ body.running .readout{font-size:min(26vw,22dvh);color:var(--tomato)}
 }
 .btn-go:active{box-shadow:0 .13rem 0 var(--grass-deep), 0 .3rem .7rem rgba(35,50,77,.25)}
 .btn-stop{
-  width:min(72vw,44dvh,360px);aspect-ratio:1;border-radius:50%;flex:none;
+  width:min(52vw,26dvh,280px);aspect-ratio:1;border-radius:50%;flex:none;
   background:radial-gradient(circle at 50% 32%, #FF8E97, var(--tomato) 62%, #D62438);
-  font-size:min(11vw,8.5dvh,6rem);letter-spacing:.08em;text-indent:.08em;
-  border-width:.6rem;
-  box-shadow:0 .8rem 0 #B01B2C, 0 1.1rem 1.8rem rgba(35,50,77,.35);
+  font-size:min(8vw,5.2dvh,3rem);letter-spacing:.08em;text-indent:.08em;
+  border-width:.5rem;
+  box-shadow:0 .7rem 0 #B01B2C, 0 1rem 1.6rem rgba(35,50,77,.35);
   animation:bounce .62s ease-in-out infinite;
 }
 .btn-stop:active{box-shadow:0 .2rem 0 #B01B2C, 0 .4rem .9rem rgba(35,50,77,.3)}
-/* 数字を出すモードの計測中はメーターが主役。上まわりを小さくして画面に収める */
-body:not(.blind).running .btn-stop{width:min(44vw,26dvh,240px);font-size:min(7vw,5dvh,2.6rem)}
-body:not(.blind).running .ribbon{font-size:min(3vw,2.4dvh,1.4rem)}
-body:not(.blind).running .target-val{font-size:min(10vw,10dvh)}
-body:not(.blind).running .tagline{display:none}
-body:not(.blind).running .dial{width:min(70vw,32dvh,460px)}
 @keyframes bounce{
   0%,100%{transform:translateY(0) scale(1)}
-  50%{transform:translateY(-.5rem) scale(1.035)}
+  50%{transform:translateY(-.45rem) scale(1.035)}
 }
 .btn-reset{
   background:linear-gradient(180deg,#FFDE63,var(--lemon));
@@ -189,22 +176,9 @@ body:not(.blind).running .dial{width:min(70vw,32dvh,460px)}
 .btn-chip[aria-pressed="true"]{background:var(--grass);color:var(--cream);border-color:var(--grass-deep)}
 .btn-chip:focus-visible{outline:.18rem solid var(--navy);outline-offset:.2rem}
 
-/* ===== カウントダウン ===== */
-#countdown{
-  position:fixed;inset:0;z-index:25;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(126,216,247,.9);
-}
-body.hot #countdown{background:rgba(255,194,77,.9)}
-#cdNum{
-  font-family:var(--font-num);font-weight:700;
-  font-size:min(52vw,52dvh);line-height:1;color:var(--tomato);
-  -webkit-text-stroke:.045em var(--cream);paint-order:stroke fill;
-  text-shadow:0 .045em 0 rgba(35,50,77,.3);
-}
-#cdNum.go{color:var(--grass);font-size:min(36vw,36dvh)}
-.pop{animation:pop .62s cubic-bezier(.34,1.56,.64,1) both}
-@keyframes pop{0%{transform:scale(2.4) rotate(-10deg);opacity:0}50%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(.92);opacity:.9}}
+/* 計測中は画面のどこを押しても止まる（反応が速いほうが公平） */
+#tapstop{position:fixed;inset:0;z-index:20;display:none}
+body.running #tapstop{display:block}
 
 /* ===== 結果 ===== */
 .judge{
@@ -276,7 +250,7 @@ input:focus{outline:.18rem solid var(--grass);outline-offset:.15rem}
   right:14px;
   transition:opacity .25s;
 }
-body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
+body.running .corner{opacity:0;pointer-events:none}
 
 /* ===== エフェクト ===== */
 #fx{position:fixed;inset:0;z-index:40;pointer-events:none}
@@ -296,7 +270,6 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   .tagline,.keyhint{display:none}
   .btn-chip{font-size:.74rem;padding:.42em .8em}
   .stage{padding-bottom:calc(52px + env(safe-area-inset-bottom))}
-  /* 横向きスマホでも結果画面が必ず収まるように余白を確保 */
   .judge{font-size:min(11vw,12dvh)}
   .diff{font-size:min(5vw,5.2dvh,2rem)}
   .result-time{font-size:min(30vw,29dvh)}
@@ -315,8 +288,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     <div class="target-block">
       <div class="ribbon">めざせ</div>
       <div class="target-val telop"><span id="targetLabel">10.00</span><span class="u">びょう</span></div>
-      <p class="tagline telop" id="tagReady">ぴったりで とめてね！</p>
-      <p class="tagline telop hot" id="tagRun">いまだ！ とめて！</p>
+      <p class="tagline telop">ぴったりで とめてね！</p>
     </div>
 
     <div class="dial">
@@ -337,26 +309,18 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     <button class="btn btn-reset telop" id="resetBtn">もういっかい</button>
   </section>
 
-  <div id="countdown" class="hidden"><div id="cdNum">3</div></div>
-
   <div class="corner">
     <button class="btn-chip" id="settingsBtn">せってい</button>
   </div>
 </div>
+
+<div id="tapstop"></div>
 
 <div class="overlay hidden" id="settings">
   <h2>せってい</h2>
   <div class="setting-row">
     <span class="label">なんびょう？</span>
     <span class="row"><input type="number" id="targetInput" step="0.01" min="0.1" value="10"><button class="btn-chip" id="applyBtn">かえる</button></span>
-  </div>
-  <div class="setting-row">
-    <span class="label">めかくし<small>すうじを かくして カンで しょうぶ</small></span>
-    <button class="btn-chip" id="blindBtn" aria-pressed="true">ON</button>
-  </div>
-  <div class="setting-row">
-    <span class="label">3・2・1 のカウント</span>
-    <button class="btn-chip" id="cdBtn" aria-pressed="true">ON</button>
   </div>
   <div class="setting-row">
     <span class="label">おと</span>
@@ -378,14 +342,11 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   var $ = function(id){ return document.getElementById(id); };
   var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  var target = 10.00, running = false, counting = false, startAt = 0, raf = 0;
-  var useCountdown = true, soundOn = true;
-
-  document.body.classList.add("blind");   // 初期状態はめかくしON
+  var target = 10.00, running = false, startAt = 0, raf = 0, soundOn = true;
 
   /* ---------- 背景：ふわふわ漂う風船 ----------
-     ゆらぎは周期の揃わない正弦波の重ね合わせ。何回動いても
-     「いま何秒か」のヒントにならないようにしてある。 */
+     周期の揃わない正弦波を重ねているので、動きを数えても
+     「いま何秒か」のヒントにはならない。 */
   var bg = $("bg"), bctx = bg.getContext("2d"), BW = 0, BH = 0;
   var BALLOONS = [
     { fx:0.051, fy:0.073, px:0.00, py:1.73, r:0.20, c:"#FFD230" },
@@ -422,7 +383,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
       bctx.globalAlpha = 0.34;
       bctx.fillStyle = b.c;
       bctx.beginPath(); bctx.arc(x, y, r, 0, 6.2832); bctx.fill();
-      bctx.globalAlpha = 0.5;                       // 風船のツヤ
+      bctx.globalAlpha = 0.5;
       bctx.fillStyle = "#FFFFFF";
       bctx.beginPath(); bctx.arc(x - r * 0.32, y - r * 0.36, r * 0.2, 0, 6.2832); bctx.fill();
     }
@@ -528,52 +489,27 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   }
   function replay(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 
-  /* ---------- 計測 ---------- */
+  /* ---------- 計測（進行はいつも見える） ---------- */
   function tick(){
     var sec = (performance.now() - startAt) / 1000;
-    if (!document.body.classList.contains("blind")){
-      $("timer").textContent = sec.toFixed(2);
-      $("ring").style.background =
-        "conic-gradient(from -90deg, var(--lemon) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,210,48,0) 0deg)";
-    }
+    $("timer").textContent = sec.toFixed(2);
+    $("ring").style.background =
+      "conic-gradient(from -90deg, var(--lemon) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,210,48,0) 0deg)";
     raf = requestAnimationFrame(tick);
   }
 
-  function beginRun(){
+  function start(){
+    if (running) return;
+    ac();
+    tone(1046, 0.16, "triangle", 0.22);
     running = true;
     document.body.classList.add("running");
     setMood("run");
     $("startBtn").classList.add("hidden");
     $("stopBtn").classList.remove("hidden");
+    $("timer").textContent = "0.00";
     startAt = performance.now();
     raf = requestAnimationFrame(tick);
-  }
-
-  var cdTimers = [];
-  function start(){
-    if (running || counting) return;
-    ac();
-    if (!useCountdown){ tone(1046, 0.18, "triangle", 0.22); beginRun(); return; }
-
-    counting = true;
-    document.body.classList.add("counting");
-    var cd = $("countdown"), num = $("cdNum");
-    cd.classList.remove("hidden");
-    ["3", "2", "1", "GO!"].forEach(function(label, i){
-      cdTimers.push(setTimeout(function(){
-        num.textContent = label;
-        num.className = (label === "GO!") ? "go" : "";
-        replay(num, "pop");
-        if (label === "GO!") melody([[784,.14],[1046,.3]], "triangle", 0.24);
-        else tone(660, 0.16, "triangle", 0.2);
-      }, i * 700));
-    });
-    cdTimers.push(setTimeout(function(){
-      cd.classList.add("hidden");
-      counting = false;
-      document.body.classList.remove("counting");
-      beginRun();
-    }, 4 * 700 - 120));
   }
 
   function stop(){
@@ -623,11 +559,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   }
 
   function reset(){
-    cdTimers.forEach(clearTimeout); cdTimers = [];
-    counting = false;
-    document.body.classList.remove("counting");
     setMood("idle");
-    $("countdown").classList.add("hidden");
     $("result").classList.add("hidden");
     $("game").classList.remove("hidden");
     $("stopBtn").classList.add("hidden");
@@ -638,8 +570,9 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 
   /* ---------- 操作 ---------- */
   $("startBtn").addEventListener("click", start);
-  $("stopBtn").addEventListener("pointerdown", stop);
   $("resetBtn").addEventListener("click", reset);
+  // 計測中は画面のどこを押しても止まる
+  $("tapstop").addEventListener("pointerdown", function(e){ e.preventDefault(); stop(); });
 
   $("applyBtn").addEventListener("click", function(){
     var v = Number($("targetInput").value);
@@ -647,18 +580,10 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     else { $("targetInput").value = target; }
   });
 
-  function toggleBtn(btn, on){
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.textContent = on ? "ON" : "OFF";
-  }
-  $("blindBtn").addEventListener("click", function(){
-    toggleBtn(this, document.body.classList.toggle("blind"));
-  });
-  $("cdBtn").addEventListener("click", function(){
-    useCountdown = !useCountdown; toggleBtn(this, useCountdown);
-  });
   $("soundBtn").addEventListener("click", function(){
-    soundOn = !soundOn; toggleBtn(this, soundOn);
+    soundOn = !soundOn;
+    this.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    this.textContent = soundOn ? "ON" : "OFF";
     if (soundOn) tone(880, 0.14, "triangle", 0.2);
   });
 
@@ -684,7 +609,6 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
       if (e.repeat) return;
       if (!$("settings").classList.contains("hidden")) return;
       if (running) stop();
-      else if (counting) return;
       else if (!$("result").classList.contains("hidden")) reset();
       else start();
     }
