@@ -6,257 +6,274 @@
 <title>ピタリ・ストップウォッチ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap">
 <style>
 :root{
-  --ink:#04060A;
-  --panel:#111926;
-  --line:#2C3B52;
-  --text:#F2F7FC;
-  --muted:#93A6BE;
-  --amber:#FFB627;
-  --amber-hot:#FFD75E;
-  --cyan:#3FE9FA;
-  --go:#3DDC84;
-  --stop:#FF3B55;
-  --font-num:"Chivo Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --font-ja:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --sky:#7FD8F7;
+  --sky-deep:#3EB8E5;
+  --lemon:#FFD230;
+  --orange:#FF9A28;
+  --tomato:#FF4B5C;
+  --grass:#4FD97A;
+  --grass-deep:#2AA855;
+  --peach:#FF7BB0;
+  --grape:#A97BFF;
+  --navy:#23324D;
+  --navy-soft:#5B6C88;
+  --cream:#FFFDF5;
+  --font-num:"Fredoka","M PLUS Rounded 1c",system-ui,sans-serif;
+  --font-ja:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  background:var(--ink);
-  color:var(--text);
+  background:var(--sky);
+  color:var(--navy);
   font-family:var(--font-ja);
   overflow:hidden;
   -webkit-tap-highlight-color:transparent;
   user-select:none;
 }
 
-/* ===== 背景：ゆらめく光（不規則な周期＝時間のヒントにならない） ===== */
-#bg{
-  position:fixed;left:-9%;top:-9%;width:118%;height:118%;
-  z-index:0;pointer-events:none;
-  filter:blur(26px) saturate(1.25);
-  opacity:.85;
+/* ===== 背景：空 → ふわふわ漂う風船 → 水玉 ===== */
+#sky{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(170deg,#BDEEFF 0%, var(--sky) 42%, #9BE8C6 100%);
+  transition:background 1.1s ease;
 }
-/* 中央を沈めて文字を浮かせる（見やすさの要） */
-#vignette{
-  position:fixed;inset:0;z-index:1;pointer-events:none;
-  background:
-    radial-gradient(ellipse 64% 52% at 50% 46%, rgba(4,6,10,.88) 0%, rgba(4,6,10,.66) 46%, rgba(4,6,10,0) 80%),
-    linear-gradient(180deg, rgba(4,6,10,.55), transparent 22%, transparent 78%, rgba(4,6,10,.7));
+body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--peach) 100%)}
+#bg{position:fixed;inset:0;z-index:1;pointer-events:none;filter:blur(2px)}
+#dots{
+  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(circle, rgba(255,255,255,.85) 22%, transparent 23%);
+  background-size:46px 46px;
 }
 
 /* ===== ステージ ===== */
-#shell{position:relative;z-index:2}
+#shell{position:relative;z-index:3}
 .stage{
   height:100dvh;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(10px,2.2dvh,34px);
-  padding:max(10px,env(safe-area-inset-top)) 16px calc(64px + env(safe-area-inset-bottom));
+  gap:clamp(10px,2.4dvh,32px);
+  padding:max(10px,env(safe-area-inset-top)) 16px calc(66px + env(safe-area-inset-bottom));
   text-align:center;overflow:hidden;
 }
 .hidden{display:none !important}
 
+/* 白フチのテロップ文字 */
+.telop{
+  -webkit-text-stroke:.14em var(--cream);
+  paint-order:stroke fill;
+  text-shadow:0 .07em 0 rgba(35,50,77,.28);
+}
+
 /* ===== 目標秒数 ===== */
-.target-block{display:flex;flex-direction:column;align-items:center;gap:.15em}
-.eyebrow{
-  font-family:var(--font-num);font-size:min(3.4vw,.92rem);font-weight:400;
-  letter-spacing:.5em;text-indent:.5em;text-transform:uppercase;color:var(--cyan);
-  text-shadow:0 0 18px rgba(63,233,250,.75);
+.target-block{display:flex;flex-direction:column;align-items:center;gap:.1em}
+.ribbon{
+  display:inline-block;
+  background:var(--lemon);
+  color:var(--navy);
+  font-weight:900;
+  font-size:min(4.6vw,3.2dvh,1.45rem);
+  letter-spacing:.14em;text-indent:.14em;
+  padding:.34em 1.5em;
+  border-radius:999px;
+  border:.18em solid var(--cream);
+  box-shadow:0 .28em 0 rgba(35,50,77,.22);
+  transform:rotate(-2.5deg);
 }
 .target-val{
   font-family:var(--font-num);font-weight:700;
-  font-variant-numeric:tabular-nums;line-height:.92;
-  color:#FFF3CF;
-  font-size:min(19vw,15dvh,9.5rem);
-  text-shadow:0 0 6px #fff,0 0 26px #FFB627,0 0 70px rgba(255,182,39,.7),0 0 150px rgba(255,182,39,.4);
-  transition:font-size .4s cubic-bezier(.16,1,.3,1);
+  font-variant-numeric:tabular-nums;line-height:1;
+  color:var(--tomato);
+  font-size:min(21vw,16dvh,10rem);
+  transition:font-size .4s cubic-bezier(.34,1.56,.64,1);
 }
-.target-val .u{font-size:.3em;color:var(--amber);margin-left:.16em;text-shadow:0 0 20px rgba(255,182,39,.7)}
-body.running .target-val{font-size:min(13vw,10dvh,5.4rem)}
+.target-val .u{font-size:.3em;color:var(--orange);margin-left:.1em}
+body.running .target-val{font-size:min(14vw,11dvh,6rem)}
 .tagline{
-  margin-top:.4em;color:var(--text);opacity:.72;font-weight:900;
-  font-size:min(4.6vw,3.2dvh,1.5rem);letter-spacing:.3em;text-indent:.3em;
+  margin-top:.35em;font-weight:900;color:var(--navy);
+  font-size:min(5vw,3.4dvh,1.6rem);letter-spacing:.14em;text-indent:.14em;
 }
-.tagline.hot{
-  color:var(--stop);opacity:1;
-  text-shadow:0 0 26px rgba(255,59,85,.9);
-  animation:hotPulse .82s ease-in-out infinite;
-}
-@keyframes hotPulse{50%{opacity:.45}}
+.tagline.hot{color:var(--tomato);animation:wiggle .5s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(-2.5deg) scale(1)}50%{transform:rotate(2.5deg) scale(1.07)}}
 body:not(.running) #tagRun{display:none}
 body.running #tagReady{display:none}
 .keyhint{
-  color:var(--muted);opacity:.55;
-  font-family:var(--font-num);font-size:.74rem;letter-spacing:.16em;
+  color:var(--navy-soft);font-weight:700;
+  font-size:.78rem;letter-spacing:.1em;
 }
 body.running .keyhint{display:none}
 @media (pointer:coarse){.keyhint{display:none}}
 
-/* ===== 計測ダイヤル（数字を出すモードのときだけ） ===== */
+/* ===== 計測メーター（数字を出すモードのみ） ===== */
 .dial{
   position:relative;flex:none;
-  width:min(78vw,38dvh,460px);
+  width:min(74vw,34dvh,400px);
   aspect-ratio:1;display:grid;place-items:center;
-  transition:width .4s cubic-bezier(.16,1,.3,1);
+  transition:width .4s cubic-bezier(.34,1.56,.64,1);
 }
-body.running .dial{width:min(88vw,46dvh,540px)}
+body.running .dial{width:min(84vw,42dvh,470px)}
 body.blind .dial{display:none}
-.dial-track{position:absolute;inset:0;border-radius:50%;border:1px solid var(--line)}
-.dial-ring{
+.dial-face{
   position:absolute;inset:0;border-radius:50%;
-  background:conic-gradient(from -90deg, var(--amber-hot) 0deg, rgba(255,182,39,0) 0deg);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 10px),#000 calc(100% - 9px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 10px),#000 calc(100% - 9px));
+  background:var(--cream);
+  border:.5rem solid #fff;
+  box-shadow:0 .7rem 0 rgba(35,50,77,.2), inset 0 0 0 .35rem var(--sky-deep);
+}
+.dial-ring{
+  position:absolute;inset:5%;border-radius:50%;
+  background:conic-gradient(from -90deg, var(--lemon) 0deg, rgba(255,210,48,0) 0deg);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
+  mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
   opacity:0;transition:opacity .2s;
-  filter:drop-shadow(0 0 12px rgba(255,182,39,.95));
 }
 body.running .dial-ring{opacity:1}
-.dial-ticks{position:absolute;inset:0;border-radius:50%;opacity:.5}
 .readout{
+  position:relative;
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;
-  font-size:min(21vw,12dvh,7.4rem);
-  line-height:1;letter-spacing:-.02em;color:var(--text);
-  transition:font-size .4s cubic-bezier(.16,1,.3,1);
+  font-size:min(19vw,11dvh,6.4rem);
+  line-height:1;color:var(--navy);
+  transition:font-size .4s cubic-bezier(.34,1.56,.64,1);
 }
-body.running .readout{
-  font-size:min(26vw,15dvh,9.2rem);color:#fff;
-  text-shadow:0 0 14px #fff,0 0 55px rgba(255,182,39,.85),0 0 120px rgba(255,182,39,.45);
-}
+body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
 
 /* ===== ボタン ===== */
 .btn{
   font-family:var(--font-ja);font-weight:900;
-  border:none;border-radius:5px;cursor:pointer;color:#041016;
-  transition:transform .08s;position:relative;overflow:hidden;
+  border:.28rem solid var(--cream);
+  cursor:pointer;color:var(--cream);
+  transition:transform .09s, box-shadow .09s;
 }
-.btn:focus-visible{outline:4px solid var(--cyan);outline-offset:5px}
-.btn:active{transform:translateY(3px)}
+.btn:focus-visible{outline:.28rem solid var(--navy);outline-offset:.3rem}
+.btn:active{transform:translateY(.42rem)}
 .btn-go{
-  background:linear-gradient(180deg,#6DF7B0,var(--go));
-  font-size:min(7vw,5.4dvh,2.4rem);
-  letter-spacing:.28em;text-indent:.28em;padding:.72em 2.6em;
-  box-shadow:0 8px 0 #146C45, 0 0 60px rgba(61,220,132,.6);
+  background:linear-gradient(180deg,#6BE894,var(--grass));
+  font-size:min(7.4vw,5.6dvh,2.5rem);
+  letter-spacing:.2em;text-indent:.2em;
+  padding:.62em 1.9em;border-radius:999px;
+  box-shadow:0 .55rem 0 var(--grass-deep), 0 .8rem 1.4rem rgba(35,50,77,.28);
 }
-.btn-go::after{
-  content:"";position:absolute;top:0;bottom:0;width:45%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);
-  animation:shine 2.6s ease-in-out infinite;
-}
-@keyframes shine{0%{left:-60%}55%,100%{left:120%}}
+.btn-go:active{box-shadow:0 .13rem 0 var(--grass-deep), 0 .3rem .7rem rgba(35,50,77,.25)}
 .btn-stop{
-  width:min(74vw,46dvh,380px);aspect-ratio:1;border-radius:50%;flex:none;
-  background:radial-gradient(circle at 50% 34%, #FF93A4, var(--stop) 56%, #8E0A20);
-  color:#fff;font-size:min(11vw,7.4dvh,4rem);letter-spacing:.16em;text-indent:.16em;
-  border:10px solid #fff;
-  box-shadow:0 0 0 10px rgba(255,59,85,.22), 0 0 120px rgba(255,59,85,.75);
-  animation:breathe .9s ease-in-out infinite, blink .55s steps(1) infinite;
+  width:min(72vw,44dvh,360px);aspect-ratio:1;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 50% 32%, #FF8E97, var(--tomato) 62%, #D62438);
+  font-size:min(12vw,8dvh,4.2rem);letter-spacing:.08em;text-indent:.08em;
+  border-width:.6rem;
+  box-shadow:0 .8rem 0 #B01B2C, 0 1.1rem 1.8rem rgba(35,50,77,.35);
+  animation:bounce .62s ease-in-out infinite;
 }
-@keyframes breathe{50%{box-shadow:0 0 0 26px rgba(255,59,85,.1), 0 0 170px rgba(255,59,85,.95)}}
-@keyframes blink{
-  0%,49%{text-shadow:0 0 10px #fff,0 0 26px #fff}
-  50%,100%{color:#FFF27A;text-shadow:0 0 18px #FFF27A,0 0 50px #FFF27A,0 0 90px #FFB627}
+.btn-stop:active{box-shadow:0 .2rem 0 #B01B2C, 0 .4rem .9rem rgba(35,50,77,.3)}
+@keyframes bounce{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-.5rem) scale(1.035)}
 }
 .btn-reset{
-  background:linear-gradient(180deg,var(--amber-hot),var(--amber));
-  font-size:min(5vw,4.2dvh,1.7rem);
-  letter-spacing:.24em;text-indent:.24em;padding:.7em 2.5em;
-  box-shadow:0 8px 0 #8B5D08, 0 0 50px rgba(255,182,39,.55);
+  background:linear-gradient(180deg,#FFDE63,var(--lemon));
+  color:var(--navy);
+  font-size:min(5.4vw,4.4dvh,1.8rem);
+  letter-spacing:.16em;text-indent:.16em;
+  padding:.6em 1.9em;border-radius:999px;
+  box-shadow:0 .55rem 0 #D9A210, 0 .8rem 1.4rem rgba(35,50,77,.28);
 }
-.btn-ghost{
-  background:rgba(9,14,22,.88);color:var(--muted);
-  border:1px solid var(--line);border-radius:4px;
-  font-family:var(--font-num);font-size:.8rem;letter-spacing:.16em;
-  text-transform:uppercase;padding:.66em 1.1em;cursor:pointer;
-  backdrop-filter:blur(8px);
+.btn-reset:active{box-shadow:0 .13rem 0 #D9A210, 0 .3rem .7rem rgba(35,50,77,.25)}
+.btn-chip{
+  background:var(--cream);color:var(--navy);font-weight:900;
+  border:.16rem solid var(--navy);border-radius:999px;
+  font-size:.86rem;letter-spacing:.06em;
+  padding:.5em 1.1em;cursor:pointer;
+  box-shadow:0 .2rem 0 rgba(35,50,77,.35);
 }
-.btn-ghost:hover{color:var(--text);border-color:var(--cyan)}
-.btn-ghost[aria-pressed="true"]{color:#041016;background:var(--cyan);border-color:var(--cyan);font-weight:700}
-.btn-ghost:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.btn-chip:active{transform:translateY(.16rem);box-shadow:0 .05rem 0 rgba(35,50,77,.35)}
+.btn-chip[aria-pressed="true"]{background:var(--grass);color:var(--cream);border-color:var(--grass-deep)}
+.btn-chip:focus-visible{outline:.18rem solid var(--navy);outline-offset:.2rem}
 
 /* ===== カウントダウン ===== */
 #countdown{
   position:fixed;inset:0;z-index:25;
   display:flex;align-items:center;justify-content:center;
-  background:rgba(4,6,10,.86);
+  background:rgba(126,216,247,.9);
 }
+body.hot #countdown{background:rgba(255,194,77,.9)}
 #cdNum{
   font-family:var(--font-num);font-weight:700;
-  font-size:min(50vw,48dvh,28rem);line-height:1;color:#FFF3CF;
-  text-shadow:0 0 40px #FFB627,0 0 120px rgba(255,182,39,.85),0 0 260px rgba(255,182,39,.5);
+  font-size:min(52vw,50dvh,28rem);line-height:1;color:var(--tomato);
+  -webkit-text-stroke:.1em var(--cream);paint-order:stroke fill;
+  text-shadow:0 .06em 0 rgba(35,50,77,.3);
 }
-#cdNum.go{color:#D6FFEA;text-shadow:0 0 40px var(--go),0 0 130px rgba(61,220,132,.85);font-size:min(30vw,32dvh,16rem)}
-.pop{animation:pop .62s cubic-bezier(.16,1,.3,1) both}
-@keyframes pop{0%{transform:scale(2.6);opacity:0;filter:blur(16px)}45%{transform:scale(1);opacity:1;filter:blur(0)}100%{transform:scale(.94);opacity:.88}}
+#cdNum.go{color:var(--grass);font-size:min(34vw,34dvh,17rem)}
+.pop{animation:pop .62s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{0%{transform:scale(2.4) rotate(-10deg);opacity:0}50%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(.92);opacity:.9}}
 
 /* ===== 結果 ===== */
 .judge{
-  font-weight:900;line-height:1;
-  font-size:min(11vw,11dvh,6rem);
-  letter-spacing:.03em;text-wrap:balance;color:var(--text);
-  text-shadow:0 0 30px rgba(255,255,255,.4);
+  font-weight:900;line-height:1.06;
+  font-size:min(13vw,12dvh,6.4rem);
+  color:var(--tomato);text-wrap:balance;
 }
-.judge.rainbow{animation:rb .7s linear infinite}
+.judge.rainbow{animation:rb .68s linear infinite}
 @keyframes rb{
-  0%{color:#FF3B55;text-shadow:0 0 36px #FF3B55}
-  20%{color:#FFB627;text-shadow:0 0 36px #FFB627}
-  40%{color:#FFF27A;text-shadow:0 0 36px #FFF27A}
-  60%{color:#3DDC84;text-shadow:0 0 36px #3DDC84}
-  80%{color:#3FE9FA;text-shadow:0 0 36px #3FE9FA}
-  100%{color:#FF2D95;text-shadow:0 0 36px #FF2D95}
+  0%{color:#FF4B5C}20%{color:#FF9A28}40%{color:#FFD230}
+  60%{color:#4FD97A}80%{color:#3EB8E5}100%{color:#A97BFF}
 }
-.judge.hit{color:#FFF3CF;text-shadow:0 0 24px #FFB627,0 0 90px rgba(255,182,39,.8)}
-.slam{animation:slam .5s cubic-bezier(.16,1,.3,1) both}
-@keyframes slam{0%{transform:scale(2.2) rotate(-6deg);opacity:0}60%{transform:scale(.94) rotate(1deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.judge.hit{color:var(--orange)}
+.judge.miss{color:var(--sky-deep)}
+.slam{animation:slam .55s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes slam{0%{transform:scale(2.3) rotate(-9deg);opacity:0}55%{transform:scale(1) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 .diff{
-  font-family:var(--font-num);font-variant-numeric:tabular-nums;
-  font-size:min(6vw,4.4dvh,2.4rem);color:var(--cyan);letter-spacing:.08em;
-  text-shadow:0 0 26px rgba(63,233,250,.6);
+  font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:600;
+  font-size:min(6.4vw,4.6dvh,2.4rem);color:var(--navy);
+  background:var(--cream);border:.2rem solid var(--navy);
+  border-radius:999px;padding:.16em .9em;
+  box-shadow:0 .24rem 0 rgba(35,50,77,.3);
 }
 .result-time{
   font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:min(29vw,23dvh,11.5rem);line-height:1;color:#FFF3CF;
-  text-shadow:0 0 20px #FFB627,0 0 90px rgba(255,182,39,.6);
+  font-size:min(30vw,24dvh,12rem);line-height:1;color:var(--cream);
+  -webkit-text-stroke:.09em var(--navy);paint-order:stroke fill;
+  text-shadow:0 .07em 0 rgba(35,50,77,.35);
 }
-.result-time .unit{font-size:.28em;color:var(--amber);margin-left:.16em}
+.result-time .unit{font-size:.27em;margin-left:.1em}
 
 /* ===== 設定パネル ===== */
 .row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
 input[type=number]{
-  font-family:var(--font-num);font-size:1.05rem;
-  background:rgba(9,14,22,.9);color:var(--text);
-  border:1px solid var(--line);border-radius:4px;
-  padding:.62em .8em;width:160px;text-align:center;
+  font-family:var(--font-num);font-size:1.15rem;font-weight:600;
+  background:#fff;color:var(--navy);
+  border:.18rem solid var(--navy);border-radius:.8rem;
+  padding:.46em .6em;width:130px;text-align:center;
 }
-input:focus{outline:2px solid var(--cyan);outline-offset:1px}
+input:focus{outline:.18rem solid var(--grass);outline-offset:.15rem}
 
 .overlay{
   position:fixed;inset:0;z-index:30;
-  background:rgba(4,6,10,.97);
+  background:rgba(126,216,247,.97);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:24px 16px;gap:16px;
+  padding:24px 16px;gap:14px;
 }
 .overlay h2{
-  font-family:var(--font-num);font-weight:400;font-size:.88rem;
-  letter-spacing:.36em;text-indent:.36em;text-transform:uppercase;color:var(--cyan);
-  text-shadow:0 0 18px rgba(63,233,250,.6);
+  font-weight:900;font-size:1.5rem;color:var(--navy);
+  background:var(--lemon);border:.2rem solid var(--cream);
+  border-radius:999px;padding:.2em 1.4em;
+  box-shadow:0 .3rem 0 rgba(35,50,77,.25);
+  transform:rotate(-2deg);
 }
 .setting-row{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
-  width:min(440px,100%);padding:.78em 0;border-bottom:1px solid var(--line);
+  width:min(440px,100%);
+  background:var(--cream);border:.16rem solid var(--navy);border-radius:1rem;
+  padding:.7em .9em;
+  box-shadow:0 .22rem 0 rgba(35,50,77,.28);
 }
-.setting-row span.label{font-weight:700;letter-spacing:.04em}
-.setting-row small{display:block;color:var(--muted);font-weight:400;font-size:.78rem;letter-spacing:0;margin-top:.15em}
+.setting-row .label{font-weight:900;letter-spacing:.02em;text-align:left}
+.setting-row small{display:block;color:var(--navy-soft);font-weight:700;font-size:.76rem;margin-top:.1em}
 
 /* ===== 下部バー ===== */
 .corner{
   position:fixed;z-index:15;
   bottom:max(12px,env(safe-area-inset-bottom));
-  left:12px;right:12px;
-  display:flex;gap:10px;align-items:center;justify-content:flex-end;
+  right:14px;
   transition:opacity .25s;
 }
 body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
@@ -264,9 +281,9 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 /* ===== エフェクト ===== */
 #fx{position:fixed;inset:0;z-index:40;pointer-events:none}
 #flash{position:fixed;inset:0;z-index:35;pointer-events:none;background:#fff;opacity:0}
-#flash.on{animation:flash .28s ease-out}
-@keyframes flash{0%{opacity:.95}100%{opacity:0}}
-.shake{animation:shake .4s cubic-bezier(.36,.07,.19,.97) both}
+#flash.on{animation:flash .3s ease-out}
+@keyframes flash{0%{opacity:.9}100%{opacity:0}}
+.shake{animation:shake .42s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes shake{
   10%,90%{transform:translate(-3px,1px)}
   20%,80%{transform:translate(6px,-2px)}
@@ -277,9 +294,8 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 
 @media (max-height:560px){
   .tagline,.keyhint{display:none}
-  .corner{gap:6px}
-  .btn-ghost{font-size:.68rem;padding:.48em .75em}
-  .stage{padding-bottom:calc(50px + env(safe-area-inset-bottom))}
+  .btn-chip{font-size:.74rem;padding:.42em .8em}
+  .stage{padding-bottom:calc(52px + env(safe-area-inset-bottom))}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important}
@@ -287,67 +303,67 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
+<div id="sky"></div>
 <canvas id="bg"></canvas>
-<div id="vignette"></div>
+<div id="dots"></div>
 
 <div id="shell">
   <main class="stage" id="game">
     <div class="target-block">
-      <div class="eyebrow">Target</div>
-      <div class="target-val"><span id="targetLabel">10.00</span><span class="u">秒</span></div>
-      <p class="tagline" id="tagReady">ぴったりで止めろ</p>
-      <p class="tagline hot" id="tagRun">今だ！止めろ</p>
+      <div class="ribbon">めざせ</div>
+      <div class="target-val telop"><span id="targetLabel">10.00</span><span class="u">びょう</span></div>
+      <p class="tagline telop" id="tagReady">ぴったりで とめてね！</p>
+      <p class="tagline telop hot" id="tagRun">いまだ！ とめて！</p>
     </div>
 
     <div class="dial">
-      <div class="dial-track"></div>
-      <svg class="dial-ticks" viewBox="0 0 200 200" aria-hidden="true"><g id="ticks" stroke="#2C3B52" stroke-width="1.6"></g></svg>
+      <div class="dial-face"></div>
       <div class="dial-ring" id="ring"></div>
       <div class="readout" id="timer">0.00</div>
     </div>
 
-    <button class="btn btn-go" id="startBtn">START</button>
+    <button class="btn btn-go telop" id="startBtn">スタート</button>
     <p class="keyhint">スペース / エンター でも操作できます</p>
-    <button class="btn btn-stop hidden" id="stopBtn">STOP</button>
+    <button class="btn btn-stop telop hidden" id="stopBtn">ストップ</button>
   </main>
 
   <section class="stage hidden" id="result">
-    <div class="judge" id="judge"></div>
+    <div class="judge telop" id="judge"></div>
     <div class="diff" id="diff"></div>
-    <div class="result-time"><span id="resultTime">0.00</span><span class="unit">秒</span></div>
-    <button class="btn btn-reset" id="resetBtn">もう一回</button>
+    <div class="result-time"><span id="resultTime">0.00</span><span class="unit">びょう</span></div>
+    <button class="btn btn-reset telop" id="resetBtn">もういっかい</button>
   </section>
 
   <div id="countdown" class="hidden"><div id="cdNum">3</div></div>
 
-  <div class="corner" id="corner">
-    <button class="btn-ghost" id="settingsBtn">設定</button>
+  <div class="corner">
+    <button class="btn-chip" id="settingsBtn">せってい</button>
   </div>
 </div>
 
 <div class="overlay hidden" id="settings">
-  <h2>Settings</h2>
+  <h2>せってい</h2>
   <div class="setting-row">
-    <span class="label">目標の秒数</span>
-    <span class="row"><input type="number" id="targetInput" step="0.01" min="0.1" value="10" style="width:110px"><button class="btn-ghost" id="applyBtn">変更</button></span>
+    <span class="label">なんびょう？</span>
+    <span class="row"><input type="number" id="targetInput" step="0.01" min="0.1" value="10"><button class="btn-chip" id="applyBtn">かえる</button></span>
   </div>
   <div class="setting-row">
-    <span class="label">目隠し<small>数字を消してカンだけで勝負</small></span>
-    <button class="btn-ghost" id="blindBtn" aria-pressed="true">ON</button>
+    <span class="label">めかくし<small>すうじを かくして カンで しょうぶ</small></span>
+    <button class="btn-chip" id="blindBtn" aria-pressed="true">ON</button>
   </div>
   <div class="setting-row">
-    <span class="label">3・2・1 カウントダウン</span>
-    <button class="btn-ghost" id="cdBtn" aria-pressed="true">ON</button>
+    <span class="label">3・2・1 のカウント</span>
+    <button class="btn-chip" id="cdBtn" aria-pressed="true">ON</button>
   </div>
   <div class="setting-row">
-    <span class="label">効果音</span>
-    <button class="btn-ghost" id="soundBtn" aria-pressed="true">ON</button>
+    <span class="label">おと</span>
+    <button class="btn-chip" id="soundBtn" aria-pressed="true">ON</button>
   </div>
   <div class="setting-row">
-    <span class="label">全画面表示</span>
-    <button class="btn-ghost" id="fsBtn">切替</button>
+    <span class="label">ぜんがめん</span>
+    <button class="btn-chip" id="fsBtn">きりかえ</button>
   </div>
-  <button class="btn-ghost" id="closeSettingsBtn" style="margin-top:8px">閉じる</button>
+  <button class="btn-chip" id="closeSettingsBtn" style="margin-top:6px">とじる</button>
 </div>
 
 <div id="flash"></div>
@@ -362,69 +378,62 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   var target = 10.00, running = false, counting = false, startAt = 0, raf = 0;
   var useCountdown = true, soundOn = true;
 
-  document.body.classList.add("blind");   // 初期状態は目隠しON
+  document.body.classList.add("blind");   // 初期状態はめかくしON
 
-  /* ---------- 背景の光 ----------
-     ゆらぎは無理数に近い比の正弦波を重ねて作る。周期が揃わないので、
-     「何回光ったら何秒」というカンニングができない。 */
-  var bg = $("bg"), bctx = bg.getContext("2d"), BW = 170, BH = 170;
-  bg.width = BW; bg.height = BH;
-
-  var BLOBS = [
-    { fx:0.053, fy:0.071, px:0.00, py:1.73, r:0.62 },
-    { fx:0.037, fy:0.061, px:2.11, py:0.44, r:0.70 },
-    { fx:0.089, fy:0.043, px:4.31, py:3.17, r:0.54 },
-    { fx:0.067, fy:0.097, px:1.27, py:5.51, r:0.58 }
+  /* ---------- 背景：ふわふわ漂う風船 ----------
+     ゆらぎは周期の揃わない正弦波の重ね合わせ。何回動いても
+     「いま何秒か」のヒントにならないようにしてある。 */
+  var bg = $("bg"), bctx = bg.getContext("2d"), BW = 0, BH = 0;
+  var BALLOONS = [
+    { fx:0.051, fy:0.073, px:0.00, py:1.73, r:0.20, c:"#FFD230" },
+    { fx:0.037, fy:0.059, px:2.11, py:0.44, r:0.26, c:"#FF7BB0" },
+    { fx:0.089, fy:0.043, px:4.31, py:3.17, r:0.16, c:"#A97BFF" },
+    { fx:0.067, fy:0.097, px:1.27, py:5.51, r:0.22, c:"#FFFFFF" },
+    { fx:0.029, fy:0.083, px:5.02, py:2.28, r:0.18, c:"#4FD97A" },
+    { fx:0.101, fy:0.031, px:3.44, py:4.66, r:0.13, c:"#FF9A28" }
   ];
-  var PAL_IDLE = ["255,182,39", "63,233,250", "108,86,255", "255,182,39"];
-  var PAL_HOT  = ["255,182,39", "255,45,149", "255,59,85", "255,215,94"];
+  function fitBg(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    BW = innerWidth; BH = innerHeight;
+    bg.width = BW * dpr; bg.height = BH * dpr;
+    bg.style.width = BW + "px"; bg.style.height = BH + "px";
+    bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  fitBg();
+  addEventListener("resize", fitBg);
 
-  var bgPhase = 0, speed = 1, speedTo = 1, bgPrev = 0;
+  var phase = 0, speed = 1, speedTo = 1, prevT = 0;
   function drawBg(now){
-    var dt = bgPrev ? Math.min((now - bgPrev) / 1000, 0.05) : 0.016;
-    bgPrev = now;
-    speed += (speedTo - speed) * 0.045;
-    bgPhase += dt * speed;
+    var dt = prevT ? Math.min((now - prevT) / 1000, 0.05) : 0.016;
+    prevT = now;
+    speed += (speedTo - speed) * 0.05;
+    phase += dt * speed;
 
-    var pal = document.body.classList.contains("hot") ? PAL_HOT : PAL_IDLE;
-    bctx.globalCompositeOperation = "source-over";
-    bctx.fillStyle = "#04060A";
-    bctx.fillRect(0, 0, BW, BH);
-    bctx.globalCompositeOperation = "lighter";
-    for (var i = 0; i < BLOBS.length; i++){
-      var b = BLOBS[i], t = bgPhase;
-      var x = BW * (0.5 + 0.42 * Math.sin(t * b.fx * 6.2832 + b.px));
-      var y = BH * (0.5 + 0.42 * Math.sin(t * b.fy * 6.2832 + b.py));
-      var r = BW * b.r;
-      var g = bctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, "rgba(" + pal[i] + ",0.55)");
-      g.addColorStop(0.55, "rgba(" + pal[i] + ",0.16)");
-      g.addColorStop(1, "rgba(" + pal[i] + ",0)");
-      bctx.fillStyle = g;
+    bctx.clearRect(0, 0, BW, BH);
+    var unit = Math.min(BW, BH);
+    for (var i = 0; i < BALLOONS.length; i++){
+      var b = BALLOONS[i];
+      var x = BW * (0.5 + 0.46 * Math.sin(phase * b.fx * 6.2832 + b.px));
+      var y = BH * (0.5 + 0.46 * Math.sin(phase * b.fy * 6.2832 + b.py));
+      var r = unit * b.r;
+      bctx.globalAlpha = 0.34;
+      bctx.fillStyle = b.c;
       bctx.beginPath(); bctx.arc(x, y, r, 0, 6.2832); bctx.fill();
+      bctx.globalAlpha = 0.5;                       // 風船のツヤ
+      bctx.fillStyle = "#FFFFFF";
+      bctx.beginPath(); bctx.arc(x - r * 0.32, y - r * 0.36, r * 0.2, 0, 6.2832); bctx.fill();
     }
+    bctx.globalAlpha = 1;
     if (!reduced) requestAnimationFrame(drawBg);
   }
-  drawBg(performance.now());   // 1枚目は即描く（描画が止まる環境でも真っ暗にしない）
-  function setMood(mode){          // idle / hot / run
+  drawBg(performance.now());   // 1枚目は即描く
+
+  function setMood(mode){                    // idle / hot / run
     document.body.classList.toggle("hot", mode !== "idle");
-    speedTo = mode === "run" ? 3.4 : (mode === "hot" ? 1.9 : 1);
+    speedTo = mode === "run" ? 3.2 : (mode === "hot" ? 1.8 : 1);
   }
 
-  /* ---------- ダイヤルの目盛り ---------- */
-  (function(){
-    var s = "";
-    for (var i = 0; i < 60; i++){
-      var a = (i * 6 - 90) * Math.PI / 180;
-      var long = i % 5 === 0, r1 = long ? 83 : 90, r2 = 97;
-      s += '<line x1="' + (100 + Math.cos(a) * r1).toFixed(1) + '" y1="' + (100 + Math.sin(a) * r1).toFixed(1)
-         + '" x2="' + (100 + Math.cos(a) * r2).toFixed(1) + '" y2="' + (100 + Math.sin(a) * r2).toFixed(1)
-         + '" stroke-opacity="' + (long ? 1 : 0.4) + '"/>';
-    }
-    $("ticks").innerHTML = s;
-  })();
-
-  /* ---------- 音 ---------- */
+  /* ---------- 音（やわらかい丸い音） ---------- */
   var actx = null;
   function ac(){
     if (!soundOn) return null;
@@ -438,30 +447,38 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     var c = ac(); if (!c) return;
     var t0 = c.currentTime + (delay || 0);
     var osc = c.createOscillator(), g = c.createGain();
-    osc.type = type || "square";
+    osc.type = type || "triangle";
     osc.frequency.setValueAtTime(freq, t0);
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol || 0.18, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + 0.014);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     osc.connect(g); g.connect(c.destination);
     osc.start(t0); osc.stop(t0 + dur + 0.02);
   }
   function melody(notes, type, vol){
     var t = 0;
-    notes.forEach(function(n){ tone(n[0], n[1], type, vol, t); t += n[1] * 0.72; });
+    notes.forEach(function(n){ tone(n[0], n[1], type, vol, t); t += n[1] * 0.7; });
   }
 
-  /* ---------- 紙吹雪 ---------- */
+  /* ---------- 紙吹雪（まると星） ---------- */
   var cvs = $("fx"), ctx = cvs.getContext("2d"), parts = [], fxRaf = 0;
-  function fitCanvas(){
+  function fitFx(){
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     cvs.width = innerWidth * dpr; cvs.height = innerHeight * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  fitCanvas();
-  addEventListener("resize", fitCanvas);
+  fitFx();
+  addEventListener("resize", fitFx);
 
-  var CONFETTI = ["#FFB627","#FFD75E","#3FE9FA","#FF2D95","#3DDC84","#FFFFFF"];
+  var POP = ["#FF4B5C","#FF9A28","#FFD230","#4FD97A","#3EB8E5","#FF7BB0","#A97BFF","#FFFFFF"];
+  function star(g, r){
+    g.beginPath();
+    for (var i = 0; i < 10; i++){
+      var rad = (i % 2 ? r * 0.46 : r), a = (Math.PI / 5) * i - Math.PI / 2;
+      g.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    g.closePath(); g.fill();
+  }
   function burst(count, power){
     if (reduced) return;
     var cx = innerWidth / 2, cy = innerHeight * 0.42;
@@ -469,11 +486,12 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
       var a = (-Math.PI / 2) + (Math.random() - 0.5) * 2.4;
       var sp = (Math.random() * 0.6 + 0.5) * power;
       parts.push({
-        x: cx + (Math.random() - 0.5) * 90, y: cy + (Math.random() - 0.5) * 60,
+        x: cx + (Math.random() - 0.5) * 100, y: cy + (Math.random() - 0.5) * 60,
         vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-        w: 6 + Math.random() * 8, h: 9 + Math.random() * 12,
-        rot: Math.random() * 6.3, vr: (Math.random() - 0.5) * 0.34,
-        c: CONFETTI[(Math.random() * CONFETTI.length) | 0]
+        r: 7 + Math.random() * 9,
+        rot: Math.random() * 6.3, vr: (Math.random() - 0.5) * 0.3,
+        star: Math.random() < 0.45,
+        c: POP[(Math.random() * POP.length) | 0]
       });
     }
     if (!fxRaf) fxRaf = requestAnimationFrame(fxLoop);
@@ -482,13 +500,14 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     ctx.clearRect(0, 0, innerWidth, innerHeight);
     for (var i = parts.length - 1; i >= 0; i--){
       var p = parts[i];
-      p.vy += 0.32; p.vx *= 0.992; p.vy *= 0.992;
+      p.vy += 0.3; p.vx *= 0.992; p.vy *= 0.992;
       p.x += p.vx; p.y += p.vy; p.rot += p.vr;
       if (p.y > innerHeight + 60) { parts.splice(i, 1); continue; }
       ctx.save();
       ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-      ctx.fillStyle = p.c; ctx.globalAlpha = 0.95;
-      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.fillStyle = p.c;
+      if (p.star) star(ctx, p.r);
+      else { ctx.beginPath(); ctx.arc(0, 0, p.r * 0.72, 0, 6.2832); ctx.fill(); }
       ctx.restore();
     }
     if (parts.length) fxRaf = requestAnimationFrame(fxLoop);
@@ -512,7 +531,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     if (!document.body.classList.contains("blind")){
       $("timer").textContent = sec.toFixed(2);
       $("ring").style.background =
-        "conic-gradient(from -90deg, var(--amber-hot) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,182,39,0) 0deg)";
+        "conic-gradient(from -90deg, var(--lemon) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,210,48,0) 0deg)";
     }
     raf = requestAnimationFrame(tick);
   }
@@ -531,7 +550,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   function start(){
     if (running || counting) return;
     ac();
-    if (!useCountdown){ tone(1320, 0.16, "square", 0.2); beginRun(); return; }
+    if (!useCountdown){ tone(1046, 0.18, "triangle", 0.22); beginRun(); return; }
 
     counting = true;
     document.body.classList.add("counting");
@@ -542,7 +561,8 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
         num.textContent = label;
         num.className = (label === "GO!") ? "go" : "";
         replay(num, "pop");
-        tone(label === "GO!" ? 1320 : 760, label === "GO!" ? 0.22 : 0.13, "square", label === "GO!" ? 0.22 : 0.16);
+        if (label === "GO!") melody([[784,.14],[1046,.3]], "triangle", 0.24);
+        else tone(660, 0.16, "triangle", 0.2);
       }, i * 700));
     });
     cdTimers.push(setTimeout(function(){
@@ -561,17 +581,17 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     document.body.classList.remove("running");
     setMood("hot");
     flash(); shake();
-    tone(180, 0.24, "sawtooth", 0.2);
+    tone(240, 0.26, "sine", 0.24);
     showResult(sec, Number((sec - target).toFixed(2)));
   }
 
   var GRADES = [
-    { max: 0,    label: "\u{1F308} PERFECT!!",  cls: "rainbow", conf: 260, notes: [[523,.16],[659,.16],[784,.16],[1047,.5]] },
-    { max: 0.01, label: "\u{2B50} MIRACLE!",    cls: "hit",     conf: 200, notes: [[659,.15],[880,.15],[1175,.42]] },
-    { max: 0.05, label: "\u{1F947} SUPER!",     cls: "hit",     conf: 140, notes: [[523,.14],[784,.14],[1047,.36]] },
-    { max: 0.10, label: "\u{1F389} EXCELLENT!", cls: "hit",     conf: 90,  notes: [[523,.14],[659,.14],[880,.3]] },
-    { max: 0.30, label: "\u{1F44D} GOOD!",      cls: "",        conf: 40,  notes: [[523,.14],[659,.26]] },
-    { max: 1e9,  label: "TRY AGAIN",            cls: "",        conf: 0,   notes: [[220,.16],[165,.3]] }
+    { max: 0,    label: "\u{1F308} かんぺき！！", cls: "rainbow", conf: 280, notes: [[523,.16],[659,.16],[784,.16],[1046,.5]] },
+    { max: 0.01, label: "\u{2B50} きせき！",      cls: "hit",     conf: 220, notes: [[659,.15],[880,.15],[1175,.44]] },
+    { max: 0.05, label: "\u{1F947} すごい！",     cls: "hit",     conf: 150, notes: [[523,.14],[784,.14],[1046,.38]] },
+    { max: 0.10, label: "\u{1F389} やったね！",   cls: "hit",     conf: 100, notes: [[523,.14],[659,.14],[880,.32]] },
+    { max: 0.30, label: "\u{1F44D} いいね！",     cls: "",        conf: 50,  notes: [[523,.14],[659,.28]] },
+    { max: 1e9,  label: "もういっかい！",          cls: "miss",    conf: 0,   notes: [[392,.16],[294,.3]] }
   ];
 
   function showResult(sec, delta){
@@ -579,22 +599,22 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     for (var i = 0; i < GRADES.length; i++){ if (ad <= GRADES[i].max){ g = GRADES[i]; break; } }
 
     $("judge").textContent = g.label;
-    $("judge").className = "judge " + g.cls;
-    $("diff").textContent = (delta >= 0 ? "+" : "") + delta.toFixed(2) + " 秒";
+    $("judge").className = "judge telop " + g.cls;
+    $("diff").textContent = (delta >= 0 ? "+" : "") + delta.toFixed(2) + " びょう";
     $("game").classList.add("hidden");
     $("result").classList.remove("hidden");
     replay($("judge"), "slam");
 
-    var el = $("resultTime"), t0 = performance.now(), dur = reduced ? 0 : 520;
+    var el = $("resultTime"), t0 = performance.now(), dur = reduced ? 0 : 540;
     (function up(){
       var k = dur ? Math.min(1, (performance.now() - t0) / dur) : 1;
       el.textContent = (sec * (1 - Math.pow(1 - k, 3))).toFixed(2);
       if (k < 1) requestAnimationFrame(up);
       else {
         el.textContent = sec.toFixed(2);
-        melody(g.notes, g.cls ? "square" : "triangle", 0.2);
-        if (g.conf) burst(g.conf, g.conf > 180 ? 17 : 13);
-        if (g.conf > 180) setTimeout(function(){ burst(g.conf, 15); }, 420);
+        melody(g.notes, "triangle", 0.22);
+        if (g.conf) burst(g.conf, g.conf > 200 ? 17 : 13);
+        if (g.conf > 200) setTimeout(function(){ burst(g.conf, 15); }, 430);
       }
     })();
   }
@@ -610,7 +630,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
     $("stopBtn").classList.add("hidden");
     $("startBtn").classList.remove("hidden");
     $("timer").textContent = "0.00";
-    $("ring").style.background = "conic-gradient(from -90deg, var(--amber-hot) 0deg, rgba(255,182,39,0) 0deg)";
+    $("ring").style.background = "conic-gradient(from -90deg, var(--lemon) 0deg, rgba(255,210,48,0) 0deg)";
   }
 
   /* ---------- 操作 ---------- */
@@ -620,7 +640,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 
   $("applyBtn").addEventListener("click", function(){
     var v = Number($("targetInput").value);
-    if (v > 0){ target = v; $("targetLabel").textContent = v.toFixed(2); tone(880, 0.1, "square", 0.14); }
+    if (v > 0){ target = v; $("targetLabel").textContent = v.toFixed(2); tone(880, 0.12, "triangle", 0.18); }
     else { $("targetInput").value = target; }
   });
 
@@ -636,7 +656,7 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   });
   $("soundBtn").addEventListener("click", function(){
     soundOn = !soundOn; toggleBtn(this, soundOn);
-    if (soundOn) tone(880, 0.12, "square", 0.16);
+    if (soundOn) tone(880, 0.14, "triangle", 0.2);
   });
 
   $("settingsBtn").addEventListener("click", function(){ $("settings").classList.remove("hidden"); });
