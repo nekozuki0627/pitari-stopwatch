@@ -35,7 +35,7 @@ body{
   user-select:none;
 }
 
-/* ===== 背景：空 → ふわふわ漂う風船 → 水玉 ===== */
+/* ===== 背景：空 → ふわふわ漂う風船 ===== */
 #sky{
   position:fixed;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(170deg,#BDEEFF 0%, var(--sky) 42%, #9BE8C6 100%);
@@ -43,11 +43,6 @@ body{
 }
 body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--peach) 100%)}
 #bg{position:fixed;inset:0;z-index:1;pointer-events:none;filter:blur(2px)}
-#dots{
-  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.5;
-  background-image:radial-gradient(circle, rgba(255,255,255,.85) 22%, transparent 23%);
-  background-size:46px 46px;
-}
 
 /* ===== ステージ ===== */
 #shell{position:relative;z-index:3}
@@ -314,7 +309,6 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
 <body>
 <div id="sky"></div>
 <canvas id="bg"></canvas>
-<div id="dots"></div>
 
 <div id="shell">
   <main class="stage" id="game">
