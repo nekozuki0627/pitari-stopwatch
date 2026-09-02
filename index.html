@@ -301,6 +301,10 @@ body.running .corner,body.counting .corner{opacity:0;pointer-events:none}
   .tagline,.keyhint{display:none}
   .btn-chip{font-size:.74rem;padding:.42em .8em}
   .stage{padding-bottom:calc(52px + env(safe-area-inset-bottom))}
+  /* 横向きスマホでも結果画面が必ず収まるように余白を確保 */
+  .judge{font-size:min(11vw,12dvh)}
+  .diff{font-size:min(5vw,5.2dvh,2rem)}
+  .result-time{font-size:min(30vw,29dvh)}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important}
