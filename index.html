@@ -76,7 +76,7 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
   background:var(--lemon);
   color:var(--navy);
   font-weight:900;
-  font-size:min(4.6vw,3.2dvh,1.45rem);
+  font-size:min(4.4vw,3.4dvh,2.1rem);
   letter-spacing:.14em;text-indent:.14em;
   padding:.34em 1.5em;
   border-radius:999px;
@@ -88,14 +88,14 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;line-height:1;
   color:var(--tomato);
-  font-size:min(21vw,16dvh,10rem);
+  font-size:min(26vw,32dvh);
   transition:font-size .4s cubic-bezier(.34,1.56,.64,1);
 }
 .target-val .u{font-size:.3em;color:var(--orange);margin-left:.1em}
-body.running .target-val{font-size:min(14vw,11dvh,6rem)}
+body.running .target-val{font-size:min(15vw,15dvh)}
 .tagline{
   margin-top:.35em;font-weight:900;color:var(--navy);
-  font-size:min(5vw,3.4dvh,1.6rem);letter-spacing:.14em;text-indent:.14em;
+  font-size:min(5vw,4dvh,2.6rem);letter-spacing:.14em;text-indent:.14em;
 }
 .tagline.hot{color:var(--tomato);animation:wiggle .5s ease-in-out infinite}
 @keyframes wiggle{0%,100%{transform:rotate(-2.5deg) scale(1)}50%{transform:rotate(2.5deg) scale(1.07)}}
@@ -111,11 +111,11 @@ body.running .keyhint{display:none}
 /* ===== 計測メーター（数字を出すモードのみ） ===== */
 .dial{
   position:relative;flex:none;
-  width:min(74vw,34dvh,400px);
+  width:min(74vw,34dvh,460px);
   aspect-ratio:1;display:grid;place-items:center;
   transition:width .4s cubic-bezier(.34,1.56,.64,1);
 }
-body.running .dial{width:min(84vw,42dvh,470px)}
+body.running .dial{width:min(80vw,38dvh,540px)}
 body.blind .dial{display:none}
 .dial-face{
   position:absolute;inset:0;border-radius:50%;
@@ -135,11 +135,11 @@ body.running .dial-ring{opacity:1}
   position:relative;
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;
-  font-size:min(19vw,11dvh,6.4rem);
+  font-size:min(20vw,13dvh);
   line-height:1;color:var(--navy);
   transition:font-size .4s cubic-bezier(.34,1.56,.64,1);
 }
-body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
+body.running .readout{font-size:min(26vw,22dvh);color:var(--tomato)}
 
 /* ===== ボタン ===== */
 .btn{
@@ -152,7 +152,7 @@ body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
 .btn:active{transform:translateY(.42rem)}
 .btn-go{
   background:linear-gradient(180deg,#6BE894,var(--grass));
-  font-size:min(7.4vw,5.6dvh,2.5rem);
+  font-size:min(7vw,6.4dvh,4rem);
   letter-spacing:.2em;text-indent:.2em;
   padding:.62em 1.9em;border-radius:999px;
   box-shadow:0 .55rem 0 var(--grass-deep), 0 .8rem 1.4rem rgba(35,50,77,.28);
@@ -161,12 +161,13 @@ body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
 .btn-stop{
   width:min(72vw,44dvh,360px);aspect-ratio:1;border-radius:50%;flex:none;
   background:radial-gradient(circle at 50% 32%, #FF8E97, var(--tomato) 62%, #D62438);
-  font-size:min(12vw,8dvh,4.2rem);letter-spacing:.08em;text-indent:.08em;
+  font-size:min(11vw,8.5dvh,6rem);letter-spacing:.08em;text-indent:.08em;
   border-width:.6rem;
   box-shadow:0 .8rem 0 #B01B2C, 0 1.1rem 1.8rem rgba(35,50,77,.35);
   animation:bounce .62s ease-in-out infinite;
 }
 .btn-stop:active{box-shadow:0 .2rem 0 #B01B2C, 0 .4rem .9rem rgba(35,50,77,.3)}
+body:not(.blind).running .btn-stop{width:min(44vw,26dvh,240px);font-size:min(7vw,5dvh,2.6rem)}
 @keyframes bounce{
   0%,100%{transform:translateY(0) scale(1)}
   50%{transform:translateY(-.5rem) scale(1.035)}
@@ -174,7 +175,7 @@ body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
 .btn-reset{
   background:linear-gradient(180deg,#FFDE63,var(--lemon));
   color:var(--navy);
-  font-size:min(5.4vw,4.4dvh,1.8rem);
+  font-size:min(5.2vw,5dvh,3rem);
   letter-spacing:.16em;text-indent:.16em;
   padding:.6em 1.9em;border-radius:999px;
   box-shadow:0 .55rem 0 #D9A210, 0 .8rem 1.4rem rgba(35,50,77,.28);
@@ -200,18 +201,18 @@ body.running .readout{font-size:min(23vw,13.5dvh,8rem);color:var(--tomato)}
 body.hot #countdown{background:rgba(255,194,77,.9)}
 #cdNum{
   font-family:var(--font-num);font-weight:700;
-  font-size:min(52vw,50dvh,28rem);line-height:1;color:var(--tomato);
+  font-size:min(52vw,52dvh);line-height:1;color:var(--tomato);
   -webkit-text-stroke:.045em var(--cream);paint-order:stroke fill;
   text-shadow:0 .045em 0 rgba(35,50,77,.3);
 }
-#cdNum.go{color:var(--grass);font-size:min(34vw,34dvh,17rem)}
+#cdNum.go{color:var(--grass);font-size:min(36vw,36dvh)}
 .pop{animation:pop .62s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes pop{0%{transform:scale(2.4) rotate(-10deg);opacity:0}50%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(.92);opacity:.9}}
 
 /* ===== 結果 ===== */
 .judge{
   font-weight:900;line-height:1.06;
-  font-size:min(13vw,12dvh,6.4rem);
+  font-size:min(13vw,14dvh);
   color:var(--tomato);text-wrap:balance;
 }
 .judge.rainbow{animation:rb .68s linear infinite}
@@ -225,14 +226,14 @@ body.hot #countdown{background:rgba(255,194,77,.9)}
 @keyframes slam{0%{transform:scale(2.3) rotate(-9deg);opacity:0}55%{transform:scale(1) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0)}}
 .diff{
   font-family:var(--font-num);font-variant-numeric:tabular-nums;font-weight:600;
-  font-size:min(6.4vw,4.6dvh,2.4rem);color:var(--navy);
+  font-size:min(6vw,5.6dvh,3.4rem);color:var(--navy);
   background:var(--cream);border:.2rem solid var(--navy);
   border-radius:999px;padding:.16em .9em;
   box-shadow:0 .24rem 0 rgba(35,50,77,.3);
 }
 .result-time{
   font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:min(30vw,24dvh,12rem);line-height:1;color:var(--cream);
+  font-size:min(34vw,33dvh);line-height:1;color:var(--cream);
   -webkit-text-stroke:.045em var(--navy);paint-order:stroke fill;
   text-shadow:0 .05em 0 rgba(35,50,77,.35);
 }
