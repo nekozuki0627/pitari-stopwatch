@@ -60,12 +60,14 @@ body.hot #sky{background:linear-gradient(170deg,#FFE9A8 0%, #FFC24D 45%, var(--p
 }
 .hidden{display:none !important}
 
-/* 白フチのテロップ文字 */
+/* 白フチのテロップ文字。フチは文字が大きいほど相対的に細く */
 .telop{
-  -webkit-text-stroke:.14em var(--cream);
+  -webkit-text-stroke:.09em var(--cream);
   paint-order:stroke fill;
-  text-shadow:0 .07em 0 rgba(35,50,77,.28);
+  text-shadow:0 .06em 0 rgba(35,50,77,.28);
 }
+.target-val.telop,.judge.telop{-webkit-text-stroke-width:.055em;text-shadow:0 .05em 0 rgba(35,50,77,.28)}
+.btn.telop{-webkit-text-stroke-width:.05em;text-shadow:none}
 
 /* ===== 目標秒数 ===== */
 .target-block{display:flex;flex-direction:column;align-items:center;gap:.1em}
@@ -199,8 +201,8 @@ body.hot #countdown{background:rgba(255,194,77,.9)}
 #cdNum{
   font-family:var(--font-num);font-weight:700;
   font-size:min(52vw,50dvh,28rem);line-height:1;color:var(--tomato);
-  -webkit-text-stroke:.1em var(--cream);paint-order:stroke fill;
-  text-shadow:0 .06em 0 rgba(35,50,77,.3);
+  -webkit-text-stroke:.045em var(--cream);paint-order:stroke fill;
+  text-shadow:0 .045em 0 rgba(35,50,77,.3);
 }
 #cdNum.go{color:var(--grass);font-size:min(34vw,34dvh,17rem)}
 .pop{animation:pop .62s cubic-bezier(.34,1.56,.64,1) both}
@@ -231,8 +233,8 @@ body.hot #countdown{background:rgba(255,194,77,.9)}
 .result-time{
   font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
   font-size:min(30vw,24dvh,12rem);line-height:1;color:var(--cream);
-  -webkit-text-stroke:.09em var(--navy);paint-order:stroke fill;
-  text-shadow:0 .07em 0 rgba(35,50,77,.35);
+  -webkit-text-stroke:.045em var(--navy);paint-order:stroke fill;
+  text-shadow:0 .05em 0 rgba(35,50,77,.35);
 }
 .result-time .unit{font-size:.27em;margin-left:.1em}
 
