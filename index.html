@@ -100,31 +100,23 @@ body.running .tagline{display:none}
 body.running .keyhint{display:none}
 @media (pointer:coarse){.keyhint{display:none}}
 
-/* ===== 計測メーター（計測中だけ出す。観客に進行が見える） ===== */
-.dial{
-  position:relative;flex:none;display:none;
-  width:min(72vw,40dvh,520px);
-  aspect-ratio:1;place-items:center;
-}
-body.running .dial{display:grid}
-.dial-face{
-  position:absolute;inset:0;border-radius:50%;
+/* ===== 計測プレート（計測中だけ出す。観客に進行が見える）
+   数字を丸に閉じ込めると桁が入りきらず折り返すので、テロップ板に置く ===== */
+.meter{
+  display:none;flex:none;
+  font-size:min(24vw,24dvh);
   background:var(--cream);
-  border:.5rem solid #fff;
-  box-shadow:0 .7rem 0 rgba(35,50,77,.2), inset 0 0 0 .35rem var(--sky-deep);
+  border:.055em solid #fff;
+  border-radius:.2em;
+  padding:.05em .24em;
+  box-shadow:0 .085em 0 rgba(35,50,77,.25);
 }
-.dial-ring{
-  position:absolute;inset:5%;border-radius:50%;
-  background:conic-gradient(from -90deg, var(--lemon) 0deg, rgba(255,210,48,0) 0deg);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 15px),#000 calc(100% - 14px));
-}
+body.running .meter{display:block}
 .readout{
-  position:relative;
   font-family:var(--font-num);font-weight:700;
   font-variant-numeric:tabular-nums;
-  font-size:min(26vw,24dvh);
-  line-height:1;color:var(--tomato);white-space:nowrap;
+  font-size:1em;line-height:1.06;
+  color:var(--tomato);white-space:nowrap;
 }
 
 /* ===== ボタン ===== */
@@ -205,7 +197,7 @@ body.running #tapstop{display:block}
 }
 .result-time{
   font-family:var(--font-num);font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:min(34vw,33dvh);line-height:1;color:var(--cream);white-space:nowrap;
+  font-size:min(27vw,33dvh);line-height:1;color:var(--cream);white-space:nowrap;
   -webkit-text-stroke:.045em var(--navy);paint-order:stroke fill;
   text-shadow:0 .05em 0 rgba(35,50,77,.35);
 }
@@ -273,8 +265,7 @@ body.running .corner{opacity:0;pointer-events:none}
   .btn-chip{font-size:.74rem;padding:.42em .8em}
   .stage{gap:8px;padding-bottom:calc(46px + env(safe-area-inset-bottom))}
   .ribbon,body.running .ribbon{font-size:.82rem;padding:.28em 1.2em}
-  .dial{width:min(38vw,31dvh,240px)}
-  .readout{font-size:min(17vw,19dvh)}
+  .meter{font-size:min(15vw,20dvh)}
   .btn-stop{width:min(24vw,20dvh,150px);font-size:min(3.2vw,3.2dvh,1.2rem);border-width:.3rem}
   .btn-go{font-size:min(5vw,5.6dvh,2rem);padding:.5em 1.6em}
   .judge{font-size:min(10vw,12dvh)}
@@ -299,9 +290,7 @@ body.running .corner{opacity:0;pointer-events:none}
       <p class="tagline telop">ぴったりで とめてね！</p>
     </div>
 
-    <div class="dial">
-      <div class="dial-face"></div>
-      <div class="dial-ring" id="ring"></div>
+    <div class="meter">
       <div class="readout" id="timer">0.00</div>
     </div>
 
@@ -501,8 +490,6 @@ body.running .corner{opacity:0;pointer-events:none}
   function tick(){
     var sec = (performance.now() - startAt) / 1000;
     $("timer").textContent = sec.toFixed(2);
-    $("ring").style.background =
-      "conic-gradient(from -90deg, var(--lemon) " + ((sec % 1) * 360).toFixed(1) + "deg, rgba(255,210,48,0) 0deg)";
     raf = requestAnimationFrame(tick);
   }
 
@@ -573,7 +560,6 @@ body.running .corner{opacity:0;pointer-events:none}
     $("stopBtn").classList.add("hidden");
     $("startBtn").classList.remove("hidden");
     $("timer").textContent = "0.00";
-    $("ring").style.background = "conic-gradient(from -90deg, var(--lemon) 0deg, rgba(255,210,48,0) 0deg)";
   }
 
   /* ---------- 操作 ---------- */
