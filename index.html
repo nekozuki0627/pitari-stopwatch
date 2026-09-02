@@ -164,7 +164,12 @@ body.running .readout{font-size:min(26vw,22dvh);color:var(--tomato)}
   animation:bounce .62s ease-in-out infinite;
 }
 .btn-stop:active{box-shadow:0 .2rem 0 #B01B2C, 0 .4rem .9rem rgba(35,50,77,.3)}
+/* 数字を出すモードの計測中はメーターが主役。上まわりを小さくして画面に収める */
 body:not(.blind).running .btn-stop{width:min(44vw,26dvh,240px);font-size:min(7vw,5dvh,2.6rem)}
+body:not(.blind).running .ribbon{font-size:min(3vw,2.4dvh,1.4rem)}
+body:not(.blind).running .target-val{font-size:min(10vw,10dvh)}
+body:not(.blind).running .tagline{display:none}
+body:not(.blind).running .dial{width:min(70vw,32dvh,460px)}
 @keyframes bounce{
   0%,100%{transform:translateY(0) scale(1)}
   50%{transform:translateY(-.5rem) scale(1.035)}
