@@ -205,7 +205,7 @@ body.running #tapstop{display:block}
 
 /* ===== 設定パネル ===== */
 .row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
-input[type=number]{
+input[type=text],input[type=number]{
   font-family:var(--font-num);font-size:1.15rem;font-weight:600;
   background:#fff;color:var(--navy);
   border:.18rem solid var(--navy);border-radius:.8rem;
@@ -317,7 +317,7 @@ body.running .corner{opacity:0;pointer-events:none}
   <h2>せってい</h2>
   <div class="setting-row">
     <span class="label">なんびょう？</span>
-    <span class="row"><input type="number" id="targetInput" step="0.01" min="0.1" value="10"><button class="btn-chip" id="applyBtn">かえる</button></span>
+    <span class="row"><input type="text" id="targetInput" inputmode="decimal" autocomplete="off" value="10.00" aria-label="めざす秒数"><button class="btn-chip" id="applyBtn">かえる</button></span>
   </div>
   <div class="setting-row">
     <span class="label">おと</span>
@@ -568,11 +568,27 @@ body.running .corner{opacity:0;pointer-events:none}
   // 計測中は画面のどこを押しても止まる
   $("tapstop").addEventListener("pointerdown", function(e){ e.preventDefault(); stop(); });
 
-  $("applyBtn").addEventListener("click", function(){
-    var v = Number($("targetInput").value);
-    if (v > 0){ target = v; $("targetLabel").textContent = v.toFixed(2); tone(880, 0.12, "triangle", 0.18); }
-    else { $("targetInput").value = target; }
-  });
+  // 全角数字・全角ピリオド・読点・カンマ・空白をすべて受け付ける
+  function toNumber(raw){
+    var t = String(raw)
+      .replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/[．。，、,]/g, ".")
+      .replace(/\s/g, "");
+    return Number(t);
+  }
+  function applyTarget(){
+    var v = toNumber($("targetInput").value);
+    if (isFinite(v) && v > 0){
+      target = v;
+      $("targetLabel").textContent = v.toFixed(2);
+      $("targetInput").value = v.toFixed(2);   // 受け付けた値を입力欄にも戻す
+      tone(880, 0.12, "triangle", 0.18);
+    } else {
+      $("targetInput").value = target.toFixed(2);   // ダメな入力は元に戻す
+      tone(300, 0.16, "triangle", 0.16);
+    }
+  }
+  $("applyBtn").addEventListener("click", applyTarget);
 
   $("soundBtn").addEventListener("click", function(){
     soundOn = !soundOn;
