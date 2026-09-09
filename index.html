@@ -579,6 +579,7 @@ body.running .corner{opacity:0;pointer-events:none}
   function applyTarget(){
     var v = toNumber($("targetInput").value);
     if (isFinite(v) && v > 0){
+      v = Number(v.toFixed(2));      // 計測は0.01刻みなので目標も2桁に揃える（揃えないと「かんぺき」が出せない）
       target = v;
       $("targetLabel").textContent = v.toFixed(2);
       $("targetInput").value = v.toFixed(2);   // 受け付けた値を入力欄にも戻す
