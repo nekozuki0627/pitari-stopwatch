@@ -581,7 +581,7 @@ body.running .corner{opacity:0;pointer-events:none}
     if (isFinite(v) && v > 0){
       target = v;
       $("targetLabel").textContent = v.toFixed(2);
-      $("targetInput").value = v.toFixed(2);   // 受け付けた値を입力欄にも戻す
+      $("targetInput").value = v.toFixed(2);   // 受け付けた値を入力欄にも戻す
       tone(880, 0.12, "triangle", 0.18);
     } else {
       $("targetInput").value = target.toFixed(2);   // ダメな入力は元に戻す
