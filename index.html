@@ -363,7 +363,7 @@ body.running .corner{opacity:0;pointer-events:none}
   var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var target = 10.00, running = false, startAt = 0, raf = 0, soundOn = true;
-  var useCountdown = true, counting = false, cdTimers = [];
+  var useCountdown = true, counting = false, cdTimers = [], cdToken = 0;
 
   /* ---------- 背景：ふわふわ漂う風船 ----------
      周期の揃わない正弦波を重ねているので、動きを数えても
@@ -457,15 +457,15 @@ body.running .corner{opacity:0;pointer-events:none}
     try { speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
   }
   function say(text){
-    if (!soundOn || !voiceOK) return false;
+    if (!soundOn || !voiceOK) return null;
     try {
       var u = new SpeechSynthesisUtterance(text);
       u.lang = "ja-JP"; u.rate = 1.15; u.pitch = 1.3; u.volume = 1;
       if (jaVoice) u.voice = jaVoice;
       speechSynthesis.cancel();
       speechSynthesis.speak(u);
-      return true;
-    } catch (e) { return false; }
+      return u;
+    } catch (e) { return null; }
   }
 
   function melody(notes, type, vol){
@@ -557,6 +557,7 @@ body.running .corner{opacity:0;pointer-events:none}
   }
 
   function clearCd(){
+    cdToken++;                       // 動いているカウントダウンを無効にする
     cdTimers.forEach(clearTimeout); cdTimers = [];
     counting = false;
     document.body.classList.remove("counting");
@@ -569,24 +570,48 @@ body.running .corner{opacity:0;pointer-events:none}
     if (!useCountdown){ say("スタート"); tone(1046, 0.16, "triangle", 0.22); beginRun(); return; }
 
     counting = true;
+    var myToken = ++cdToken;
     document.body.classList.add("counting");
     var num = $("cdNum");
-    var steps = [["3", "さん"], ["2", "に"], ["1", "いち"], ["GO!", "スタート"]];
-    steps.forEach(function(st, i){
-      cdTimers.push(setTimeout(function(){
-        num.textContent = st[0];
-        num.className = (i === 3) ? "go" : "";
-        replay(num, "pop");
-        say(st[1]);
-        if (i === 3) tone(1046, 0.18, "triangle", 0.22);
-        else tone(660, 0.14, "triangle", 0.18);
-      }, i * 1000));
-    });
-    // 「スタート」の声と同時に計測をはじめる
-    cdTimers.push(setTimeout(function(){
+
+    function go(){
+      if (myToken !== cdToken) return;   // リセット等で無効になっていたら動かさない
       counting = false;
       document.body.classList.remove("counting");
       beginRun();
+    }
+
+    // 3 → 2 → 1
+    [["3", "さん"], ["2", "に"], ["1", "いち"]].forEach(function(st, i){
+      cdTimers.push(setTimeout(function(){
+        if (myToken !== cdToken) return;
+        num.textContent = st[0];
+        num.className = "";
+        replay(num, "pop");
+        say(st[1]);
+        tone(660, 0.14, "triangle", 0.18);
+      }, i * 1000));
+    });
+
+    // 「スタート」→ 言い終わってから計測をはじめる
+    cdTimers.push(setTimeout(function(){
+      if (myToken !== cdToken) return;
+      num.textContent = "GO!";
+      num.className = "go";
+      replay(num, "pop");
+      tone(1046, 0.18, "triangle", 0.22);
+
+      var u = say("スタート"), fired = false;
+      function once(){ if (fired) return; fired = true; go(); }
+      if (u){
+        u.onend = once;
+        u.onerror = once;
+        // 保険：終了イベントを返さない端末があるので、最長1.8秒で切り上げる
+        cdTimers.push(setTimeout(once, 1800));
+      } else {
+        // 声が使えない／音オフのときは、ひと呼吸おいてから
+        cdTimers.push(setTimeout(once, 450));
+      }
     }, 3000));
   }
 
