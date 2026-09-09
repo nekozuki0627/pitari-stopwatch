@@ -169,6 +169,24 @@ body.running .meter{display:block}
 .btn-chip[aria-pressed="true"]{background:var(--grass);color:var(--cream);border-color:var(--grass-deep)}
 .btn-chip:focus-visible{outline:.18rem solid var(--navy);outline-offset:.2rem}
 
+/* ===== 3・2・1 カウントダウン ===== */
+#countdown{
+  position:fixed;inset:0;z-index:26;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(127,216,247,.93);
+}
+body.counting #countdown{display:flex}
+body.counting .corner{opacity:0;pointer-events:none}
+#cdNum{
+  font-family:var(--font-num);font-weight:700;
+  font-size:min(52vw,52dvh);line-height:1;color:var(--tomato);
+  -webkit-text-stroke:.045em var(--cream);paint-order:stroke fill;
+  text-shadow:0 .045em 0 rgba(35,50,77,.3);white-space:nowrap;
+}
+#cdNum.go{color:var(--grass);font-size:min(30vw,30dvh)}
+.pop{animation:pop .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{0%{transform:scale(2.4) rotate(-10deg);opacity:0}50%{transform:scale(1) rotate(0);opacity:1}100%{transform:scale(.93);opacity:.9}}
+
 /* 計測中は画面のどこを押しても止まる（反応が速いほうが公平） */
 #tapstop{position:fixed;inset:0;z-index:20;display:none}
 body.running #tapstop{display:block}
@@ -312,12 +330,17 @@ body.running .corner{opacity:0;pointer-events:none}
 </div>
 
 <div id="tapstop"></div>
+<div id="countdown"><div id="cdNum">3</div></div>
 
 <div class="overlay hidden" id="settings">
   <h2>せってい</h2>
   <div class="setting-row">
     <span class="label">なんびょう？</span>
     <span class="row"><input type="text" id="targetInput" inputmode="decimal" autocomplete="off" value="10.00" aria-label="めざす秒数"><button class="btn-chip" id="applyBtn">かえる</button></span>
+  </div>
+  <div class="setting-row">
+    <span class="label">3・2・1 のカウント<small>こえで かぞえてスタート</small></span>
+    <button class="btn-chip" id="cdBtn" aria-pressed="true">ON</button>
   </div>
   <div class="setting-row">
     <span class="label">おと</span>
@@ -340,6 +363,7 @@ body.running .corner{opacity:0;pointer-events:none}
   var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var target = 10.00, running = false, startAt = 0, raf = 0, soundOn = true;
+  var useCountdown = true, counting = false, cdTimers = [];
 
   /* ---------- 背景：ふわふわ漂う風船 ----------
      周期の揃わない正弦波を重ねているので、動きを数えても
@@ -416,6 +440,34 @@ body.running .corner{opacity:0;pointer-events:none}
     osc.connect(g); g.connect(c.destination);
     osc.start(t0); osc.stop(t0 + dur + 0.02);
   }
+  // 声（ブラウザの読み上げ機能。音声ファイル不要）
+  var voiceOK = ("speechSynthesis" in window);
+  var jaVoice = null;
+  function pickVoice(){
+    if (!voiceOK) return;
+    try {
+      var vs = speechSynthesis.getVoices() || [];
+      for (var i = 0; i < vs.length; i++){
+        if (vs[i].lang && vs[i].lang.toLowerCase().indexOf("ja") === 0){ jaVoice = vs[i]; break; }
+      }
+    } catch (e) {}
+  }
+  if (voiceOK){
+    pickVoice();
+    try { speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
+  }
+  function say(text){
+    if (!soundOn || !voiceOK) return false;
+    try {
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = "ja-JP"; u.rate = 1.15; u.pitch = 1.3; u.volume = 1;
+      if (jaVoice) u.voice = jaVoice;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+
   function melody(notes, type, vol){
     var t = 0;
     notes.forEach(function(n){ tone(n[0], n[1], type, vol, t); t += n[1] * 0.7; });
@@ -493,10 +545,7 @@ body.running .corner{opacity:0;pointer-events:none}
     raf = requestAnimationFrame(tick);
   }
 
-  function start(){
-    if (running) return;
-    ac();
-    tone(1046, 0.16, "triangle", 0.22);
+  function beginRun(){
     running = true;
     document.body.classList.add("running");
     setMood("run");
@@ -505,6 +554,40 @@ body.running .corner{opacity:0;pointer-events:none}
     $("timer").textContent = "0.00";
     startAt = performance.now();
     raf = requestAnimationFrame(tick);
+  }
+
+  function clearCd(){
+    cdTimers.forEach(clearTimeout); cdTimers = [];
+    counting = false;
+    document.body.classList.remove("counting");
+    try { if (voiceOK) speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  function start(){
+    if (running || counting) return;
+    ac();
+    if (!useCountdown){ say("スタート"); tone(1046, 0.16, "triangle", 0.22); beginRun(); return; }
+
+    counting = true;
+    document.body.classList.add("counting");
+    var num = $("cdNum");
+    var steps = [["3", "さん"], ["2", "に"], ["1", "いち"], ["GO!", "スタート"]];
+    steps.forEach(function(st, i){
+      cdTimers.push(setTimeout(function(){
+        num.textContent = st[0];
+        num.className = (i === 3) ? "go" : "";
+        replay(num, "pop");
+        say(st[1]);
+        if (i === 3) tone(1046, 0.18, "triangle", 0.22);
+        else tone(660, 0.14, "triangle", 0.18);
+      }, i * 1000));
+    });
+    // 「スタート」の声と同時に計測をはじめる
+    cdTimers.push(setTimeout(function(){
+      counting = false;
+      document.body.classList.remove("counting");
+      beginRun();
+    }, 3000));
   }
 
   function stop(){
@@ -554,6 +637,7 @@ body.running .corner{opacity:0;pointer-events:none}
   }
 
   function reset(){
+    clearCd();
     setMood("idle");
     $("result").classList.add("hidden");
     $("game").classList.remove("hidden");
@@ -591,6 +675,12 @@ body.running .corner{opacity:0;pointer-events:none}
   }
   $("applyBtn").addEventListener("click", applyTarget);
 
+  $("cdBtn").addEventListener("click", function(){
+    useCountdown = !useCountdown;
+    this.setAttribute("aria-pressed", useCountdown ? "true" : "false");
+    this.textContent = useCountdown ? "ON" : "OFF";
+  });
+
   $("soundBtn").addEventListener("click", function(){
     soundOn = !soundOn;
     this.setAttribute("aria-pressed", soundOn ? "true" : "false");
@@ -620,6 +710,7 @@ body.running .corner{opacity:0;pointer-events:none}
       if (e.repeat) return;
       if (!$("settings").classList.contains("hidden")) return;
       if (running) stop();
+      else if (counting) return;
       else if (!$("result").classList.contains("hidden")) reset();
       else start();
     }
